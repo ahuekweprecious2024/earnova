@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Earn - Earnova</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+    <style>
+      :root {
+        --primary: #6c5ce7;
+        --primary-dark: #5649c5;
+        --secondary: #a29bfe;
+        --accent: #fd79a8;
+        --dark: #2d3436;
+        --light: #f5f6fa;
+        --success: #00b894;
+        --warning: #fdcb6e;
+        --danger: #d63031;
+        --text: #636e72;
+        --border: #dfe6e9;
+        --card-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+        --card-radius: 12px;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Poppins", sans-serif;
+        color: var(--dark);
+        background-color: var(--light);
+        line-height: 1.6;
+        overflow-x: hidden;
+        padding-bottom: 80px; /* Space for bottom nav */
+      }
+
+      .container {
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+
+      /* Header */
+      .dashboard-header {
+        background-color: white;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        position: fixed;
+        width: 100%;
+        z-index: 1000;
+        padding: 15px 0;
+      }
+
+      .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .user-profile {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .profile-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        background-color: var(--primary);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+      }
+
+      .profile-info h3 {
+        font-size: 1.1rem;
+        margin-bottom: 3px;
+      }
+
+      .profile-info p {
+        font-size: 0.8rem;
+        color: var(--text);
+        opacity: 0.8;
+      }
+
+      .notification-btn {
+        background: none;
+        border: none;
+        font-size: 1.3rem;
+        color: var(--dark);
+        position: relative;
+        cursor: pointer;
+      }
+
+      .notification-badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background-color: var(--danger);
+        color: white;
+        border-radius: 50%;
+        width: 18px;
+        height: 18px;
+        font-size: 0.7rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .logout-btn {
+        background: none;
+        border: none;
+        font-size: 1.3rem;
+        color: var(--dark);
+        cursor: pointer;
+        margin-left: 15px;
+      }
+
+      /* Main Content */
+      .main-content {
+        padding-top: 90px;
+        padding-bottom: 20px;
+      }
+
+      /* Task Card */
+      .task-card {
+        background-color: white;
+        border-radius: var(--card-radius);
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: var(--card-shadow);
+        position: relative;
+        overflow: hidden;
+        animation: fadeInUp 0.8s ease;
+      }
+
+      .task-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .task-title {
+        font-size: 1.5rem;
+        color: var(--dark);
+        font-weight: 700;
+      }
+
+      .task-reward {
+        background-color: var(--success);
+        color: white;
+        padding: 8px 15px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.9rem;
+      }
+
+      .task-description {
+        color: var(--text);
+        margin-bottom: 25px;
+        line-height: 1.7;
+      }
+
+      .task-image-container {
+        width: 100%;
+        max-width: 400px;
+        margin: 0 auto 25px;
+        border-radius: var(--card-radius);
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s;
+      }
+
+      .task-image-container:hover {
+        transform: translateY(-5px);
+      }
+
+      .task-image {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+
+      .task-steps {
+        margin-bottom: 30px;
+      }
+
+      .step {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px dashed var(--border);
+      }
+
+      .step-number {
+        width: 30px;
+        height: 30px;
+        background-color: var(--primary);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        margin-right: 15px;
+        flex-shrink: 0;
+      }
+
+      .step-content {
+        flex: 1;
+      }
+
+      .step-title {
+        font-weight: 600;
+        margin-bottom: 5px;
+      }
+
+      .step-description {
+        color: var(--text);
+        font-size: 0.9rem;
+      }
+
+      .social-platforms {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 25px;
+        flex-wrap: wrap;
+      }
+
+      .platform-btn {
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        transition: all 0.3s;
+      }
+
+      .platform-btn.facebook {
+        background-color: #1877f2;
+        color: white;
+      }
+
+      .platform-btn.twitter {
+        background-color: #1da1f2;
+        color: white;
+      }
+
+      .platform-btn.youtube {
+        background-color: #ff0000;
+        color: white;
+      }
+
+      .platform-btn:hover {
+        opacity: 0.9;
+        transform: translateY(-2px);
+      }
+
+      .link-input-container {
+        margin-bottom: 25px;
+      }
+
+      .link-input-label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+      }
+
+      .link-input-group {
+        display: flex;
+        gap: 10px;
+      }
+
+      .link-input {
+        flex: 1;
+        padding: 12px 15px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-family: "Poppins", sans-serif;
+        font-size: 0.95rem;
+        transition: all 0.3s;
+      }
+
+      .link-input:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
+      }
+
+      .verify-btn {
+        padding: 12px 25px;
+        background-color: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-family: "Poppins", sans-serif;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .verify-btn:hover {
+        background-color: var(--primary-dark);
+      }
+
+      .verify-btn:disabled {
+        background-color: var(--border);
+        cursor: not-allowed;
+      }
+
+      .task-status {
+        margin-top: 20px;
+        padding: 15px;
+        border-radius: 8px;
+        display: none;
+      }
+
+      .status-pending {
+        background-color: rgba(253, 203, 110, 0.2);
+        color: var(--warning);
+        border-left: 4px solid var(--warning);
+      }
+
+      .status-approved {
+        background-color: rgba(0, 184, 148, 0.2);
+        color: var(--success);
+        border-left: 4px solid var(--success);
+      }
+
+      .status-rejected {
+        background-color: rgba(214, 48, 49, 0.2);
+        color: var(--danger);
+        border-left: 4px solid var(--danger);
+      }
+
+      /* How to Get Link Section */
+      .how-to-section {
+        background-color: white;
+        border-radius: var(--card-radius);
+        padding: 25px;
+        margin-bottom: 30px;
+        box-shadow: var(--card-shadow);
+        animation: fadeInUp 0.8s ease 0.2s both;
+      }
+
+      .how-to-title {
+        font-size: 1.2rem;
+        margin-bottom: 15px;
+        color: var(--dark);
+      }
+
+      .platform-tabs {
+        display: flex;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 20px;
+      }
+
+      .tab-btn {
+        padding: 10px 20px;
+        background: none;
+        border: none;
+        border-bottom: 3px solid transparent;
+        font-family: "Poppins", sans-serif;
+        font-weight: 500;
+        color: var(--text);
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      .tab-btn.active {
+        color: var(--primary);
+        border-bottom-color: var(--primary);
+      }
+
+      .tab-content {
+        display: none;
+      }
+
+      .tab-content.active {
+        display: block;
+        animation: fadeIn 0.5s ease;
+      }
+
+      .tab-content img {
+        max-width: 100%;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      /* Bottom Navigation */
+      .bottom-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background-color: white;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+        padding: 10px 0;
+        z-index: 1000;
+      }
+
+      .nav-items {
+        display: flex;
+        justify-content: space-around;
+      }
+
+      .nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-decoration: none;
+        color: var(--text);
+        font-size: 0.8rem;
+        transition: all 0.3s;
+      }
+
+      .nav-item i {
+        font-size: 1.3rem;
+        margin-bottom: 5px;
+      }
+
+      .nav-item.active {
+        color: var(--primary);
+      }
+
+      .nav-item:hover {
+        color: var(--primary);
+      }
+
+      /* Loading Spinner */
+      .spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 1s ease-in-out infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Toast Notification */
+      .toast {
+        position: fixed;
+        bottom: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: var(--success);
+        color: white;
+        padding: 12px 25px;
+        border-radius: 50px;
+        font-weight: 500;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        z-index: 2000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s;
+      }
+
+      .toast.show {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      /* Animations */
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Responsive Adjustments */
+      @media (max-width: 768px) {
+        .profile-info h3 {
+          font-size: 1rem;
+        }
+
+        .profile-info p {
+          font-size: 0.75rem;
+        }
+
+        .task-header {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 10px;
+        }
+
+        .task-title {
+          font-size: 1.3rem;
+        }
+
+        .link-input-group {
+          flex-direction: column;
+        }
+
+        .verify-btn {
+          width: 100%;
+          justify-content: center;
+        }
+      }
+
+      @media (max-width: 576px) {
+        .profile-icon {
+          width: 40px;
+          height: 40px;
+          font-size: 1rem;
+        }
+
+        .task-card {
+          padding: 20px;
+        }
+
+        .platform-tabs {
+          overflow-x: auto;
+          white-space: nowrap;
+          padding-bottom: 5px;
+        }
+
+        .tab-btn {
+          padding: 8px 15px;
+          font-size: 0.9rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Dashboard Header -->
+    <header class="dashboard-header">
+      <div class="container header-content">
+        <div class="user-profile">
+          <div class="profile-icon" id="profileIcon">
+            <i class="fas fa-user"></i>
+          </div>
+          <div class="profile-info">
+            <h3 id="userName">Loading...</h3>
+            <p>Earn Money</p>
+          </div>
+        </div>
+        <div>
+          <button class="notification-btn">
+            <i class="fas fa-bell"></i>
+            <span class="notification-badge">3</span>
+          </button>
+          <button class="logout-btn" id="logoutBtn">
+            <i class="fas fa-sign-out-alt"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="container">
+        <!-- Task Card -->
+        <div class="task-card">
+          <div class="task-header">
+            <h2 class="task-title">Social Media Promotion</h2>
+            <div class="task-reward">Earn $1.50</div>
+          </div>
+
+          <p class="task-description">
+            Share our platform on social media and earn $1.50 after
+            verification. Simply download the image below, post it with the
+            provided text on Facebook, Twitter, or YouTube, then submit the post
+            link for verification.
+          </p>
+
+          <div class="task-image-container">
+            <img
+              src="https://i0.wp.com/digiconceptng.com/blog/media/2023/05/IMG_9655.jpg?resize=390%2C768&ssl=1"
+              alt="Task Image"
+              class="task-image"
+            />
+          </div>
+
+          <div class="task-steps">
+            <div class="step">
+              <div class="step-number">1</div>
+              <div class="step-content">
+                <h4 class="step-title">Download the image</h4>
+                <p class="step-description">
+                  Right-click the image above and select "Save image as" to
+                  download it to your device.
+                </p>
+              </div>
+            </div>
+
+            <div class="step">
+              <div class="step-number">2</div>
+              <div class="step-content">
+                <h4 class="step-title">Copy the text below</h4>
+                <p class="step-description">
+                  Copy this text to include with your post:
+                  <strong
+                    >"Earn real dollars online with Earnova! Complete simple
+                    tasks, play games, and earn money daily. Sign up with my
+                    referral code
+                    <span id="userReferralCode">[YOUR_CODE]</span> to get a
+                    $0.50 bonus!"</strong
+                  >
+                </p>
+              </div>
+            </div>
+
+            <div class="step">
+              <div class="step-number">3</div>
+              <div class="step-content">
+                <h4 class="step-title">Post on social media</h4>
+                <p class="step-description">
+                  Share the image and text on one of these platforms:
+                </p>
+                <div class="social-platforms">
+                  <a
+                    href="#"
+                    class="platform-btn facebook"
+                    id="facebookBtn"
+                    target="_blank"
+                  >
+                    <i class="fab fa-facebook-f"></i> Facebook
+                  </a>
+                  <a
+                    href="#"
+                    class="platform-btn twitter"
+                    id="twitterBtn"
+                    target="_blank"
+                  >
+                    <i class="fab fa-twitter"></i> Twitter
+                  </a>
+                  <a
+                    href="#"
+                    class="platform-btn youtube"
+                    id="youtubeBtn"
+                    target="_blank"
+                  >
+                    <i class="fab fa-youtube"></i> YouTube
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <div class="step">
+              <div class="step-number">4</div>
+              <div class="step-content">
+                <h4 class="step-title">Submit for verification</h4>
+                <p class="step-description">
+                  Paste the link to your post below and click "Verify" to submit
+                  for approval.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="link-input-container">
+            <label for="postLink" class="link-input-label"
+              >Paste your post link here:</label
+            >
+            <div class="link-input-group">
+              <input
+                type="url"
+                id="postLink"
+                class="link-input"
+                placeholder="https://facebook.com/your-post..."
+              />
+              <button class="verify-btn" id="verifyBtn">
+                <i class="fas fa-check-circle"></i> Verify
+              </button>
+            </div>
+          </div>
+
+          <div class="task-status" id="taskStatus"></div>
+        </div>
+
+        <!-- How to Get Link Section -->
+        <div class="how-to-section">
+          <h3 class="how-to-title">How to Get Your Post Link</h3>
+
+          <div class="platform-tabs">
+            <button class="tab-btn active" data-tab="facebook">
+              <i class="fab fa-facebook-f"></i> Facebook
+            </button>
+            <button class="tab-btn" data-tab="twitter">
+              <i class="fab fa-twitter"></i> Twitter
+            </button>
+            <button class="tab-btn" data-tab="youtube">
+              <i class="fab fa-youtube"></i> YouTube
+            </button>
+          </div>
+
+          <div class="tab-content active" id="facebook-tab">
+            <p>
+              <strong>On Facebook:</strong> After posting, click on the time
+              stamp of your post (e.g. "Just now"). This will open the post in
+              its own page. Copy the URL from your browser's address bar.
+            </p>
+            <img
+              src="https://www.lifewire.com/thmb/3Q6wzY9yq7x1wV1X4v8Q0Z6X2Y=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/facebook-post-link-5b8bdb3a46e0fb0025b4c3e4.jpg"
+              alt="Facebook post link"
+            />
+          </div>
+
+          <div class="tab-content" id="twitter-tab">
+            <p>
+              <strong>On Twitter:</strong> After tweeting, click on the "•••"
+              menu on your tweet and select "Copy link to Tweet". Alternatively,
+              click on the timestamp of your tweet to open it, then copy the URL
+              from your browser's address bar.
+            </p>
+            <img
+              src="https://www.lifewire.com/thmb/3Q6wzY9yq7x1wV1X4v8Q0Z6X2Y=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/facebook-post-link-5b8bdb3a46e0fb0025b4c3e4.jpg"
+              alt="Twitter post link"
+            />
+          </div>
+
+          <div class="tab-content" id="youtube-tab">
+            <p>
+              <strong>On YouTube:</strong> After uploading your video, click on
+              "Share" below your video, then click "Copy" to copy the video URL.
+              Make sure your video is set to "Public" or "Unlisted".
+            </p>
+            <img
+              src="https://www.lifewire.com/thmb/3Q6wzY9yq7x1wV1X4v8Q0Z6X2Y=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/facebook-post-link-5b8bdb3a46e0fb0025b4c3e4.jpg"
+              alt="YouTube video link"
+            />
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+      <div class="container">
+        <div class="nav-items">
+          <a href="dashboard.html" class="nav-item">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+          </a>
+          <a href="earn.html" class="nav-item active">
+            <i class="fas fa-coins"></i>
+            <span>Earn</span>
+          </a>
+          <a href="leaderboard.html" class="nav-item">
+            <i class="fas fa-trophy"></i>
+            <span>Leaderboard</span>
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">Task submitted for verification!</div>
+
+    <script>
+      // Firebase configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyCgOvIkDCcS3DFrt5f6Y7pYmjCoHIfDF9U",
+        authDomain: "moniebase-b4b4d.firebaseapp.com",
+        projectId: "moniebase-b4b4d",
+        storageBucket: "moniebase-b4b4d.appspot.com",
+        messagingSenderId: "1009678808253",
+        appId: "1:1009678808253:android:ff94e94c52bad2db7973d4",
+        databaseURL: "https://moniebase-b4b4d-default-rtdb.firebaseio.com/",
+      };
+
+      // Initialize Firebase
+      firebase.initializeApp(firebaseConfig);
+      const database = firebase.database();
+
+      // DOM Elements
+      const userNameElement = document.getElementById("userName");
+      const profileIconElement = document.getElementById("profileIcon");
+      const logoutBtn = document.getElementById("logoutBtn");
+      const userReferralCodeElement =
+        document.getElementById("userReferralCode");
+      const postLinkInput = document.getElementById("postLink");
+      const verifyBtn = document.getElementById("verifyBtn");
+      const taskStatusElement = document.getElementById("taskStatus");
+      const toast = document.getElementById("toast");
+      const facebookBtn = document.getElementById("facebookBtn");
+      const twitterBtn = document.getElementById("twitterBtn");
+      const youtubeBtn = document.getElementById("youtubeBtn");
+      const tabBtns = document.querySelectorAll(".tab-btn");
+      const tabContents = document.querySelectorAll(".tab-content");
+
+      // Check authentication state
+      function checkAuth() {
+        const userId = localStorage.getItem("earnova_userId");
+        const userEmail = localStorage.getItem("earnova_userEmail");
+
+        if (!userId || !userEmail) {
+          window.location.href = "login.html";
+          return false;
+        }
+        return true;
+      }
+
+      // Load user data
+      function loadUserData(userId) {
+        if (!checkAuth()) return;
+
+        database
+          .ref("earnova/" + userId)
+          .once("value")
+          .then((snapshot) => {
+            const userData = snapshot.val();
+            if (!userData) {
+              logout();
+              return;
+            }
+
+            // Update user profile
+            userNameElement.textContent = `${userData.firstName} ${userData.surname}`;
+
+            // Update profile icon
+            if (userData.firstName) {
+              profileIconElement.textContent = userData.firstName.charAt(0);
+            }
+
+            if (userData.profileImage) {
+              profileIconElement.textContent = "";
+              profileIconElement.style.backgroundImage = `url(${userData.profileImage})`;
+              profileIconElement.style.backgroundSize = "cover";
+            }
+
+            // Update referral code
+            if (userData.username) {
+              userReferralCodeElement.textContent = userData.username;
+
+              // Set social share URLs
+              const shareText = `Earn real dollars online with Earnova! Complete simple tasks, play games, and earn money daily. Sign up with my referral code ${userData.username} to get a $0.50 bonus!`;
+              const shareUrl = `https://earnova.com.ng/signup.html?ref=${userData.username}`;
+
+              facebookBtn.href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+                shareUrl
+              )}&quote=${encodeURIComponent(shareText)}`;
+              twitterBtn.href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+                shareText
+              )}&url=${encodeURIComponent(shareUrl)}`;
+              youtubeBtn.href = `https://www.youtube.com/upload`;
+            }
+
+            // Check if user has pending/approved tasks
+            checkTaskStatus(userId);
+          })
+          .catch((error) => {
+            console.error("Error loading user data:", error);
+          });
+      }
+
+      // Check task status for the user
+      function checkTaskStatus(userId) {
+        database
+          .ref(`socialTasks/${userId}`)
+          .once("value")
+          .then((snapshot) => {
+            const tasks = snapshot.val();
+            if (tasks) {
+              // Get the most recent task
+              const taskKeys = Object.keys(tasks);
+              const latestTaskKey = taskKeys[taskKeys.length - 1];
+              const latestTask = tasks[latestTaskKey];
+
+              showTaskStatus(latestTask.status);
+
+              // If task is pending or rejected, allow resubmission
+              if (
+                latestTask.status === "pending" ||
+                latestTask.status === "rejected"
+              ) {
+                verifyBtn.disabled = false;
+              } else if (latestTask.status === "approved") {
+                verifyBtn.disabled = true;
+                postLinkInput.disabled = true;
+              }
+            }
+          })
+          .catch((error) => {
+            console.error("Error checking task status:", error);
+          });
+      }
+
+      // Show task status message
+      function showTaskStatus(status) {
+        taskStatusElement.style.display = "block";
+        taskStatusElement.className = "task-status";
+
+        if (status === "pending") {
+          taskStatusElement.classList.add("status-pending");
+          taskStatusElement.innerHTML = `
+            <i class="fas fa-clock"></i> Your submission is pending verification. 
+            Please check back later.
+          `;
+        } else if (status === "approved") {
+          taskStatusElement.classList.add("status-approved");
+          taskStatusElement.innerHTML = `
+            <i class="fas fa-check-circle"></i> Your submission has been approved! 
+            $1.50 has been added to your balance. You can now complete this task again.
+          `;
+        } else if (status === "rejected") {
+          taskStatusElement.classList.add("status-rejected");
+          taskStatusElement.innerHTML = `
+            <i class="fas fa-times-circle"></i> Your submission was rejected. 
+            Please make sure your post is public and contains both the image and text, then try again.
+          `;
+        }
+      }
+
+      // Submit task for verification
+      function submitTask(userId) {
+        const postLink = postLinkInput.value.trim();
+        if (!postLink) {
+          showToast("Please enter a valid post link");
+          return;
+        }
+
+        // Validate URL format
+        try {
+          new URL(postLink);
+        } catch (e) {
+          showToast("Please enter a valid URL");
+          return;
+        }
+
+        verifyBtn.disabled = true;
+        verifyBtn.innerHTML = '<span class="spinner"></span> Submitting...';
+
+        // Create task data
+        const taskId = Date.now().toString();
+        const taskData = {
+          postLink: postLink,
+          status: "pending",
+          timestamp: firebase.database.ServerValue.TIMESTAMP,
+          userId: userId,
+        };
+
+        // Save to Firebase
+        database
+          .ref(`socialTasks/${userId}/${taskId}`)
+          .set(taskData)
+          .then(() => {
+            showToast("Task submitted for verification!");
+            showTaskStatus("pending");
+            verifyBtn.innerHTML = '<i class="fas fa-check-circle"></i> Verify';
+          })
+          .catch((error) => {
+            console.error("Error submitting task:", error);
+            showToast("Error submitting task. Please try again.");
+            verifyBtn.disabled = false;
+            verifyBtn.innerHTML = '<i class="fas fa-check-circle"></i> Verify';
+          });
+      }
+
+      // Show toast notification
+      function showToast(message) {
+        toast.textContent = message;
+        toast.classList.add("show");
+        setTimeout(() => toast.classList.remove("show"), 3000);
+      }
+
+      // Logout
+      function logout() {
+        localStorage.removeItem("earnova_userId");
+        localStorage.removeItem("earnova_userEmail");
+        window.location.href = "login.html";
+      }
+
+      // Tab switching
+      tabBtns.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          // Remove active class from all buttons and contents
+          tabBtns.forEach((b) => b.classList.remove("active"));
+          tabContents.forEach((c) => c.classList.remove("active"));
+
+          // Add active class to clicked button and corresponding content
+          btn.classList.add("active");
+          const tabId = btn.getAttribute("data-tab");
+          document.getElementById(`${tabId}-tab`).classList.add("active");
+        });
+      });
+
+      // Initialize page
+      function init() {
+        if (!checkAuth()) return;
+
+        const userId = localStorage.getItem("earnova_userId");
+        if (!userId) {
+          logout();
+          return;
+        }
+
+        loadUserData(userId);
+
+        // Event listeners
+        verifyBtn.addEventListener("click", () => submitTask(userId));
+        logoutBtn.addEventListener("click", logout);
+
+        // Enable verify button when link is entered
+        postLinkInput.addEventListener("input", function () {
+          verifyBtn.disabled = this.value.trim() === "";
+        });
+      }
+
+      // Initialize when DOM is loaded
+      document.addEventListener("DOMContentLoaded", init);
+    </script>
+  </body>
+</html>

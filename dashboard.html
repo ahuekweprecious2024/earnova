@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard - Earnova</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+    <style>
+      :root {
+        --primary: #6c5ce7;
+        --primary-dark: #5649c5;
+        --secondary: #a29bfe;
+        --accent: #fd79a8;
+        --dark: #2d3436;
+        --light: #f5f6fa;
+        --success: #00b894;
+        --warning: #fdcb6e;
+        --danger: #d63031;
+        --text: #636e72;
+        --border: #dfe6e9;
+        --card-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+        --card-radius: 12px;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Poppins", sans-serif;
+        color: var(--dark);
+        background-color: var(--light);
+        line-height: 1.6;
+        overflow-x: hidden;
+        padding-bottom: 80px; /* Space for bottom nav */
+      }
+
+      .container {
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+
+      /* Header */
+      .dashboard-header {
+        background-color: white;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        position: fixed;
+        width: 100%;
+        z-index: 1000;
+        padding: 15px 0;
+      }
+
+      .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .user-profile {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .profile-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        background-color: var(--primary);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+      }
+
+      .profile-info h3 {
+        font-size: 1.1rem;
+        margin-bottom: 3px;
+      }
+
+      .profile-info p {
+        font-size: 0.8rem;
+        color: var(--text);
+        opacity: 0.8;
+      }
+
+      .notification-btn {
+        background: none;
+        border: none;
+        font-size: 1.3rem;
+        color: var(--dark);
+        position: relative;
+        cursor: pointer;
+      }
+
+      .notification-badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background-color: var(--danger);
+        color: white;
+        border-radius: 50%;
+        width: 18px;
+        height: 18px;
+        font-size: 0.7rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .logout-btn {
+        background: none;
+        border: none;
+        font-size: 1.3rem;
+        color: var(--dark);
+        cursor: pointer;
+        margin-left: 15px;
+      }
+
+      /* Main Content */
+      .main-content {
+        padding-top: 90px;
+        padding-bottom: 20px;
+      }
+
+      /* Balance Card */
+      .balance-card {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        border-radius: var(--card-radius);
+        padding: 25px;
+        margin-bottom: 25px;
+        box-shadow: var(--card-shadow);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .balance-card::before {
+        content: "";
+        position: absolute;
+        top: -50px;
+        right: -50px;
+        width: 150px;
+        height: 150px;
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+      }
+
+      .balance-card::after {
+        content: "";
+        position: absolute;
+        bottom: -80px;
+        right: -30px;
+        width: 200px;
+        height: 200px;
+        background-color: rgba(255, 255, 255, 0.05);
+        border-radius: 50%;
+      }
+
+      .balance-title {
+        font-size: 1rem;
+        margin-bottom: 5px;
+        opacity: 0.9;
+      }
+
+      .balance-amount {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 15px;
+      }
+
+      .balance-actions {
+        display: flex;
+        gap: 10px;
+      }
+
+      .balance-btn {
+        padding: 8px 15px;
+        border-radius: 50px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s;
+        font-size: 0.85rem;
+        z-index: 1;
+      }
+
+      .deposit-btn {
+        background-color: white;
+        color: var(--primary);
+      }
+
+      .deposit-btn:hover {
+        background-color: rgba(255, 255, 255, 0.9);
+      }
+
+      .withdraw-btn {
+        background-color: transparent;
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.5);
+      }
+
+      .withdraw-btn:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+
+      /* Services Section */
+      .section-title {
+        font-size: 1.3rem;
+        margin: 25px 0 15px;
+        color: var(--dark);
+      }
+
+      .services-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 15px;
+        margin-bottom: 30px;
+      }
+
+      @media (max-width: 768px) {
+        .services-grid {
+          grid-template-columns: repeat(3, 1fr);
+        }
+      }
+
+      @media (max-width: 576px) {
+        .services-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+
+      .service-card {
+        background-color: white;
+        border-radius: var(--card-radius);
+        padding: 20px;
+        text-align: center;
+        box-shadow: var(--card-shadow);
+        transition: transform 0.3s, box-shadow 0.3s;
+        cursor: pointer;
+      }
+
+      .service-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+      }
+
+      .service-icon {
+        width: 50px;
+        height: 50px;
+        margin: 0 auto 15px;
+        background-color: rgba(108, 92, 231, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary);
+        font-size: 1.3rem;
+      }
+
+      .service-name {
+        font-size: 0.9rem;
+        font-weight: 500;
+      }
+
+      /* WhatsApp Group Section */
+      .whatsapp-card {
+        background-color: white;
+        border-radius: var(--card-radius);
+        padding: 25px;
+        margin-bottom: 30px;
+        box-shadow: var(--card-shadow);
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+
+      .whatsapp-icon {
+        width: 60px;
+        height: 60px;
+        background-color: #25d366;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.8rem;
+        flex-shrink: 0;
+      }
+
+      .whatsapp-content h3 {
+        font-size: 1.2rem;
+        margin-bottom: 5px;
+      }
+
+      .whatsapp-content p {
+        color: var(--text);
+        font-size: 0.9rem;
+        margin-bottom: 15px;
+      }
+
+      .join-btn {
+        padding: 8px 20px;
+        background-color: #25d366;
+        color: white;
+        border: none;
+        border-radius: 50px;
+        font-family: "Poppins", sans-serif;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .join-btn:hover {
+        background-color: #128c7e;
+      }
+
+      /* Bottom Navigation */
+      .bottom-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background-color: white;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+        padding: 10px 0;
+        z-index: 1000;
+      }
+
+      .nav-items {
+        display: flex;
+        justify-content: space-around;
+      }
+
+      .nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-decoration: none;
+        color: var(--text);
+        font-size: 0.8rem;
+        transition: all 0.3s;
+      }
+
+      .nav-item i {
+        font-size: 1.3rem;
+        margin-bottom: 5px;
+      }
+
+      .nav-item.active {
+        color: var(--primary);
+      }
+
+      .nav-item:hover {
+        color: var(--primary);
+      }
+
+      /* Loading Spinner */
+      .spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 1s ease-in-out infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Animations */
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Responsive Adjustments */
+      @media (max-width: 768px) {
+        .profile-info h3 {
+          font-size: 1rem;
+        }
+
+        .profile-info p {
+          font-size: 0.75rem;
+        }
+
+        .balance-amount {
+          font-size: 2rem;
+        }
+
+        .whatsapp-card {
+          flex-direction: column;
+          text-align: center;
+        }
+      }
+
+      @media (max-width: 576px) {
+        .profile-icon {
+          width: 40px;
+          height: 40px;
+          font-size: 1rem;
+        }
+
+        .balance-card {
+          padding: 20px;
+        }
+
+        .balance-amount {
+          font-size: 1.8rem;
+        }
+
+        .balance-actions {
+          flex-direction: column;
+        }
+
+        .balance-btn {
+          width: 100%;
+          text-align: center;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Dashboard Header -->
+    <header class="dashboard-header">
+      <div class="container header-content">
+        <div class="user-profile">
+          <div class="profile-icon" id="profileIcon">
+            <i class="fas fa-user"></i>
+          </div>
+          <div class="profile-info">
+            <h3 id="userName">Loading...</h3>
+            <p>Welcome back!</p>
+          </div>
+        </div>
+        <div>
+          <button class="notification-btn">
+            <i class="fas fa-bell"></i>
+            <span class="notification-badge">3</span>
+          </button>
+          <button class="logout-btn" id="logoutBtn">
+            <i class="fas fa-sign-out-alt"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="container">
+        <!-- Balance Card -->
+        <div class="balance-card">
+          <p class="balance-title">Your Balance</p>
+          <h2 class="balance-amount">$<span id="userBalance">0.00</span></h2>
+          <div class="balance-actions">
+            <a href="deposit.html" class="balance-btn deposit-btn">Deposit</a>
+            <a href="withdraw.html" class="balance-btn withdraw-btn"
+              >Withdraw</a
+            >
+          </div>
+        </div>
+
+        <!-- Services Section -->
+        <h2 class="section-title">Services</h2>
+        <div class="services-grid">
+          <div class="service-card" onclick="navigateTo('deposit')">
+            <div class="service-icon">
+              <i class="fas fa-wallet"></i>
+            </div>
+            <p class="service-name">Deposit</p>
+          </div>
+          <div class="service-card" onclick="navigateTo('withdraw')">
+            <div class="service-icon">
+              <i class="fas fa-money-bill-wave"></i>
+            </div>
+            <p class="service-name">Withdraw</p>
+          </div>
+          <div class="service-card" onclick="navigateTo('earn')">
+            <div class="service-icon">
+              <i class="fas fa-coins"></i>
+            </div>
+            <p class="service-name">Earn</p>
+          </div>
+          <div class="service-card" onclick="navigateTo('leaderboard')">
+            <div class="service-icon">
+              <i class="fas fa-trophy"></i>
+            </div>
+            <p class="service-name">Leaderboard</p>
+          </div>
+          <div class="service-card" onclick="navigateTo('settings')">
+            <div class="service-icon">
+              <i class="fas fa-cog"></i>
+            </div>
+            <p class="service-name">Settings</p>
+          </div>
+          <div class="service-card" onclick="navigateTo('referral')">
+            <div class="service-icon">
+              <i class="fas fa-users"></i>
+            </div>
+            <p class="service-name">Referral</p>
+          </div>
+          <div class="service-card" onclick="navigateTo('games')">
+            <div class="service-icon">
+              <i class="fas fa-gamepad"></i>
+            </div>
+            <p class="service-name">Play Games</p>
+          </div>
+          <div class="service-card" onclick="navigateTo('checkin')">
+            <div class="service-icon">
+              <i class="fas fa-calendar-check"></i>
+            </div>
+            <p class="service-name">Check In</p>
+          </div>
+        </div>
+
+        <!-- WhatsApp Group Section -->
+        <h2 class="section-title">Community</h2>
+        <div class="whatsapp-card">
+          <div class="whatsapp-icon">
+            <i class="fab fa-whatsapp"></i>
+          </div>
+          <div class="whatsapp-content">
+            <h3>Join Our WhatsApp Group</h3>
+            <p>
+              Stay updated with the latest news, tips, and exclusive offers from
+              Earnova.
+            </p>
+            <button class="join-btn">
+              <i class="fab fa-whatsapp"></i> Join Now
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+      <div class="container">
+        <div class="nav-items">
+          <a href="#" class="nav-item active">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+          </a>
+          <a href="leaderboard.html" class="nav-item">
+            <i class="fas fa-trophy"></i>
+            <span>Leaderboard</span>
+          </a>
+          <a href="settings.html" class="nav-item">
+            <i class="fas fa-bars"></i>
+            <span>Menu</span>
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <script>
+      // Firebase configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyCgOvIkDCcS3DFrt5f6Y7pYmjCoHIfDF9U",
+        authDomain: "moniebase-b4b4d.firebaseapp.com",
+        projectId: "moniebase-b4b4d",
+        storageBucket: "moniebase-b4b4d.appspot.com",
+        messagingSenderId: "1009678808253",
+        appId: "1:1009678808253:android:ff94e94c52bad2db7973d4",
+        databaseURL: "https://moniebase-b4b4d-default-rtdb.firebaseio.com/",
+      };
+
+      // Initialize Firebase
+      firebase.initializeApp(firebaseConfig);
+      const database = firebase.database();
+
+      // DOM Elements
+      const userNameElement = document.getElementById("userName");
+      const userBalanceElement = document.getElementById("userBalance");
+      const profileIconElement = document.getElementById("profileIcon");
+      const logoutBtn = document.getElementById("logoutBtn");
+
+      // Check if user is logged in
+      function checkAuth() {
+        const userId = localStorage.getItem("earnova_userId");
+        const userEmail = localStorage.getItem("earnova_userEmail");
+
+        if (!userId || !userEmail) {
+          window.location.href = "login.html";
+          return false;
+        }
+        return true;
+      }
+
+      // Function to fetch user data
+      function fetchUserData(userId) {
+        if (!checkAuth()) return;
+
+        database
+          .ref("earnova/" + userId)
+          .once("value")
+          .then((snapshot) => {
+            const userData = snapshot.val();
+            if (userData) {
+              // Display user data
+              userNameElement.textContent = `${userData.firstName} ${userData.surname}`;
+              userBalanceElement.textContent = userData.balance.toFixed(2);
+
+              // Set profile icon with first letter of first name
+              if (userData.firstName) {
+                profileIconElement.innerHTML = userData.firstName.charAt(0);
+              }
+
+              // If user has a profile image, use it
+              if (userData.profileImage) {
+                profileIconElement.innerHTML = "";
+                profileIconElement.style.backgroundImage = `url(${userData.profileImage})`;
+                profileIconElement.style.backgroundSize = "cover";
+                profileIconElement.style.backgroundPosition = "center";
+              }
+            } else {
+              console.error("User data not found");
+              // Clear storage and redirect to login if user not found
+              localStorage.removeItem("earnova_userId");
+              localStorage.removeItem("earnova_userEmail");
+              window.location.href = "login.html";
+            }
+          })
+          .catch((error) => {
+            console.error("Error fetching user data:", error);
+          });
+      }
+
+      // Function to navigate to different sections
+      function navigateTo(section) {
+        // In a real app, you would navigate to different pages or show different sections
+        alert(`Navigating to ${section} section...`);
+        window.location.href = `${section}.html`;
+      }
+
+      // Logout function
+      function logout() {
+        localStorage.removeItem("earnova_userId");
+        localStorage.removeItem("earnova_userEmail");
+        window.location.href = "login.html";
+      }
+
+      // Get user ID from localStorage
+      const userId = localStorage.getItem("earnova_userId");
+
+      // Fetch user data when page loads
+      window.addEventListener("DOMContentLoaded", () => {
+        if (!checkAuth()) return;
+        fetchUserData(userId);
+      });
+
+      // Logout button event
+      logoutBtn.addEventListener("click", logout);
+
+      // Bottom nav active state
+      // const navItems = document.querySelectorAll(".nav-item");
+      // navItems.forEach((item) => {
+      //   item.addEventListener("click", function (e) {
+      //     e.preventDefault();
+      //     navItems.forEach((navItem) => navItem.classList.remove("active"));
+      //     this.classList.add("active");
+      //   });
+      // });
+
+      // Auto-refresh user data every 30 seconds to keep balance updated
+      setInterval(() => {
+        if (userId) {
+          fetchUserData(userId);
+        }
+      }, 30000);
+    </script>
+  </body>
+</html>

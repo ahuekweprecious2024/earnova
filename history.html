@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Transaction History - Earnova</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+    <style>
+      :root {
+        --primary: #6c5ce7;
+        --primary-dark: #5649c5;
+        --secondary: #a29bfe;
+        --accent: #fd79a8;
+        --dark: #2d3436;
+        --light: #f5f6fa;
+        --success: #00b894;
+        --warning: #fdcb6e;
+        --danger: #d63031;
+        --text: #636e72;
+        --border: #dfe6e9;
+        --card-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+        --card-radius: 12px;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Poppins", sans-serif;
+        color: var(--dark);
+        background-color: var(--light);
+        line-height: 1.6;
+        overflow-x: hidden;
+        padding-bottom: 80px; /* Space for bottom nav */
+      }
+
+      .container {
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+
+      /* Header */
+      .dashboard-header {
+        background-color: white;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        position: fixed;
+        width: 100%;
+        z-index: 1000;
+        padding: 15px 0;
+      }
+
+      .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .user-profile {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .profile-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        background-color: var(--primary);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+      }
+
+      .profile-info h3 {
+        font-size: 1.1rem;
+        margin-bottom: 3px;
+      }
+
+      .profile-info p {
+        font-size: 0.8rem;
+        color: var(--text);
+        opacity: 0.8;
+      }
+
+      .back-btn {
+        background: none;
+        border: none;
+        font-size: 1.3rem;
+        color: var(--dark);
+        cursor: pointer;
+        margin-right: 15px;
+      }
+
+      /* Main Content */
+      .main-content {
+        padding-top: 90px;
+        padding-bottom: 20px;
+      }
+
+      .page-title {
+        font-size: 1.8rem;
+        margin-bottom: 25px;
+        color: var(--dark);
+        position: relative;
+        display: inline-block;
+      }
+
+      .page-title::after {
+        content: "";
+        position: absolute;
+        bottom: -8px;
+        left: 0;
+        width: 50px;
+        height: 4px;
+        background: linear-gradient(to right, var(--primary), var(--secondary));
+        border-radius: 2px;
+      }
+
+      /* Filters */
+      .filters {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+      }
+
+      .filter-btn {
+        padding: 8px 15px;
+        background-color: white;
+        border: 1px solid var(--border);
+        border-radius: 50px;
+        font-family: "Poppins", sans-serif;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      .filter-btn.active {
+        background-color: var(--primary);
+        color: white;
+        border-color: var(--primary);
+      }
+
+      .filter-btn:hover {
+        border-color: var(--primary);
+      }
+
+      /* History List */
+      .history-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .history-item {
+        background-color: white;
+        border-radius: var(--card-radius);
+        padding: 20px;
+        box-shadow: var(--card-shadow);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.3s;
+      }
+
+      .history-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+      }
+
+      .transaction-info {
+        flex: 1;
+      }
+
+      .transaction-type {
+        font-weight: 600;
+        margin-bottom: 5px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .transaction-date {
+        color: var(--text);
+        font-size: 0.85rem;
+      }
+
+      .transaction-amount {
+        font-weight: 700;
+        text-align: right;
+      }
+
+      .deposit {
+        color: var(--success);
+      }
+
+      .withdrawal {
+        color: var(--danger);
+      }
+
+      .transaction-status {
+        font-size: 0.8rem;
+        padding: 3px 10px;
+        border-radius: 50px;
+        margin-top: 5px;
+        display: inline-block;
+      }
+
+      .status-pending {
+        background-color: rgba(253, 203, 110, 0.2);
+        color: #b78a1a;
+      }
+
+      .status-completed {
+        background-color: rgba(0, 184, 148, 0.2);
+        color: var(--success);
+      }
+
+      .status-failed {
+        background-color: rgba(214, 48, 49, 0.2);
+        color: var(--danger);
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 50px 20px;
+        color: var(--text);
+      }
+
+      .empty-icon {
+        font-size: 3rem;
+        color: var(--border);
+        margin-bottom: 20px;
+      }
+
+      .empty-text {
+        font-size: 1.1rem;
+        margin-bottom: 15px;
+      }
+
+      .refresh-btn {
+        padding: 10px 20px;
+        background-color: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        font-family: "Poppins", sans-serif;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .refresh-btn:hover {
+        background-color: var(--primary-dark);
+      }
+
+      /* Bottom Navigation */
+      .bottom-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background-color: white;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+        padding: 10px 0;
+        z-index: 1000;
+      }
+
+      .nav-items {
+        display: flex;
+        justify-content: space-around;
+      }
+
+      .nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-decoration: none;
+        color: var(--text);
+        font-size: 0.8rem;
+        transition: all 0.3s;
+      }
+
+      .nav-item i {
+        font-size: 1.3rem;
+        margin-bottom: 5px;
+      }
+
+      .nav-item.active {
+        color: var(--primary);
+      }
+
+      .nav-item:hover {
+        color: var(--primary);
+      }
+
+      /* Loading Spinner */
+      .spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(108, 92, 231, 0.3);
+        border-radius: 50%;
+        border-top-color: var(--primary);
+        animation: spin 1s ease-in-out infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Animations */
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Responsive Adjustments */
+      @media (max-width: 768px) {
+        .profile-info h3 {
+          font-size: 1rem;
+        }
+
+        .profile-info p {
+          font-size: 0.75rem;
+        }
+
+        .page-title {
+          font-size: 1.5rem;
+        }
+
+        .history-item {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 15px;
+        }
+
+        .transaction-amount {
+          text-align: left;
+          width: 100%;
+          padding-top: 10px;
+          border-top: 1px solid var(--border);
+        }
+      }
+
+      @media (max-width: 576px) {
+        .profile-icon {
+          width: 40px;
+          height: 40px;
+          font-size: 1rem;
+        }
+
+        .filters {
+          gap: 8px;
+        }
+
+        .filter-btn {
+          padding: 6px 12px;
+          font-size: 0.8rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Dashboard Header -->
+    <header class="dashboard-header">
+      <div class="container header-content">
+        <div class="user-profile">
+          <button class="back-btn" id="backBtn">
+            <i class="fas fa-arrow-left"></i>
+          </button>
+          <div class="profile-icon" id="profileIcon">
+            <i class="fas fa-user"></i>
+          </div>
+          <div class="profile-info">
+            <h3 id="userName">Loading...</h3>
+            <p>Transaction History</p>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="container">
+        <h1 class="page-title">Transaction History</h1>
+
+        <!-- Filters -->
+        <div class="filters">
+          <button class="filter-btn active" data-filter="all">All</button>
+          <button class="filter-btn" data-filter="deposit">Deposits</button>
+          <button class="filter-btn" data-filter="withdrawal">
+            Withdrawals
+          </button>
+          <button class="filter-btn" data-filter="completed">Completed</button>
+          <button class="filter-btn" data-filter="pending">Pending</button>
+        </div>
+
+        <!-- History List -->
+        <div class="history-list" id="historyList">
+          <!-- Transactions will be loaded here -->
+          <div class="empty-state">
+            <div class="empty-icon">
+              <i class="fas fa-history"></i>
+            </div>
+            <p class="empty-text">No transactions yet</p>
+            <button class="refresh-btn" id="refreshBtn">
+              <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+      <div class="container">
+        <div class="nav-items">
+          <a href="dashboard.html" class="nav-item">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+          </a>
+          <a href="history.html" class="nav-item active">
+            <i class="fas fa-history"></i>
+            <span>History</span>
+          </a>
+          <a href="profile.html" class="nav-item">
+            <i class="fas fa-user"></i>
+            <span>Profile</span>
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <script>
+      // Firebase configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyCgOvIkDCcS3DFrt5f6Y7pYmjCoHIfDF9U",
+        authDomain: "moniebase-b4b4d.firebaseapp.com",
+        projectId: "moniebase-b4b4d",
+        storageBucket: "moniebase-b4b4d.appspot.com",
+        messagingSenderId: "1009678808253",
+        appId: "1:1009678808253:android:ff94e94c52bad2db7973d4",
+        databaseURL: "https://moniebase-b4b4d-default-rtdb.firebaseio.com/",
+      };
+
+      // Initialize Firebase
+      firebase.initializeApp(firebaseConfig);
+      const database = firebase.database();
+
+      // DOM Elements
+      const userNameElement = document.getElementById("userName");
+      const profileIconElement = document.getElementById("profileIcon");
+      const backBtn = document.getElementById("backBtn");
+      const historyList = document.getElementById("historyList");
+      const refreshBtn = document.getElementById("refreshBtn");
+      const filterButtons = document.querySelectorAll(".filter-btn");
+
+      // State management
+      let currentFilter = "all";
+      let transactions = [];
+      let depositsListener = null;
+      let withdrawalsListener = null;
+
+      // Check authentication status
+      function checkAuth() {
+        const userId = localStorage.getItem("earnova_userId");
+        const userEmail = localStorage.getItem("earnova_userEmail");
+
+        if (!userId || !userEmail) {
+          window.location.href = "login.html";
+          return false;
+        }
+        return true;
+      }
+
+      // Fetch user profile data
+      function fetchUserData(userId) {
+        if (!checkAuth()) return;
+
+        database
+          .ref("earnova/" + userId)
+          .once("value")
+          .then((snapshot) => {
+            const userData = snapshot.val();
+            if (userData) {
+              // Update UI with user data
+              userNameElement.textContent = `${userData.firstName} ${userData.surname}`;
+
+              // Set profile icon
+              if (userData.firstName) {
+                profileIconElement.innerHTML = userData.firstName.charAt(0);
+              }
+
+              // Use profile image if available
+              if (userData.profileImage) {
+                profileIconElement.innerHTML = "";
+                profileIconElement.style.backgroundImage = `url(${userData.profileImage})`;
+                profileIconElement.style.backgroundSize = "cover";
+                profileIconElement.style.backgroundPosition = "center";
+              }
+            } else {
+              handleUserNotFound();
+            }
+          })
+          .catch(handleDataFetchError);
+      }
+
+      // Set up real-time transaction listeners
+      function setupTransactionListeners() {
+        const userId = localStorage.getItem("earnova_userId");
+        if (!userId) return;
+
+        showLoadingState();
+
+        // Clear previous listeners if they exist
+        if (depositsListener) {
+          depositsListener.off();
+        }
+        if (withdrawalsListener) {
+          withdrawalsListener.off();
+        }
+
+        // Initialize transactions array
+        transactions = [];
+
+        // Set up deposits listener
+        depositsListener = database
+          .ref("earnova_deposits")
+          .orderByChild("userId")
+          .equalTo(userId)
+          .on("value", handleDepositsSnapshot);
+
+        // Set up withdrawals listener
+        withdrawalsListener = database
+          .ref("earnova_withdrawals")
+          .orderByChild("userId")
+          .equalTo(userId)
+          .on("value", handleWithdrawalsSnapshot);
+      }
+
+      // Handle deposits data snapshot
+      function handleDepositsSnapshot(snapshot) {
+        const newDeposits = [];
+
+        snapshot.forEach((deposit) => {
+          const data = deposit.val();
+          newDeposits.push(
+            createTransactionObject(deposit.key, "deposit", data)
+          );
+        });
+
+        // Update transactions array (replace all deposits)
+        transactions = [
+          ...transactions.filter((t) => t.type !== "deposit"),
+          ...newDeposits,
+        ];
+
+        processAndRenderTransactions();
+      }
+
+      // Handle withdrawals data snapshot
+      function handleWithdrawalsSnapshot(snapshot) {
+        const newWithdrawals = [];
+
+        snapshot.forEach((withdrawal) => {
+          const data = withdrawal.val();
+          newWithdrawals.push(
+            createTransactionObject(withdrawal.key, "withdrawal", data)
+          );
+        });
+
+        // Update transactions array (replace all withdrawals)
+        transactions = [
+          ...transactions.filter((t) => t.type !== "withdrawal"),
+          ...newWithdrawals,
+        ];
+
+        processAndRenderTransactions();
+      }
+
+      // Create standardized transaction object
+      function createTransactionObject(id, type, data) {
+        const isDeposit = type === "deposit";
+
+        return {
+          id: id,
+          type: type,
+          amount: data.amount || 0,
+          date: data.timestamp || new Date().toISOString(),
+          status: getTransactionStatus(data, isDeposit),
+          details: getTransactionDetails(data, isDeposit),
+          rawData: data, // Keep original data for reference
+        };
+      }
+
+      // Determine transaction status
+      function getTransactionStatus(data, isDeposit) {
+        if (isDeposit) {
+          return data.verified ? "completed" : "pending";
+        } else {
+          if (data.approved) return "completed";
+          if (data.rejected) return "failed";
+          return "pending";
+        }
+      }
+
+      // Generate transaction details string
+      function getTransactionDetails(data, isDeposit) {
+        if (isDeposit) {
+          return data.type === "bank"
+            ? `Bank Deposit (${data.accountNumber || "N/A"})`
+            : `Crypto Deposit (${data.cryptoType || "USDT"})`;
+        } else {
+          return `Withdrawal to ${data.bankName || "Bank"} (${
+            data.accountNumber || "N/A"
+          })`;
+        }
+      }
+
+      // Process and render transactions
+      function processAndRenderTransactions() {
+        // Sort by date (newest first)
+        transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        // Apply current filter
+        const filteredTransactions = applyCurrentFilter();
+
+        // Render to DOM
+        renderTransactions(filteredTransactions);
+      }
+
+      // Apply the current filter to transactions
+      function applyCurrentFilter() {
+        if (currentFilter === "all") return transactions;
+
+        return transactions.filter((transaction) => {
+          switch (currentFilter) {
+            case "deposit":
+              return transaction.type === "deposit";
+            case "withdrawal":
+              return transaction.type === "withdrawal";
+            case "completed":
+              return transaction.status === "completed";
+            case "pending":
+              return transaction.status === "pending";
+            case "failed":
+              return transaction.status === "failed";
+            default:
+              return true;
+          }
+        });
+      }
+
+      // Render transactions to the DOM
+      function renderTransactions(transactionsToRender) {
+        if (transactionsToRender.length === 0) {
+          showEmptyState();
+          return;
+        }
+
+        // Clear the list
+        historyList.innerHTML = "";
+
+        // Add each transaction to the list
+        transactionsToRender.forEach((transaction, index) => {
+          const transactionElement = createTransactionElement(
+            transaction,
+            index
+          );
+          historyList.appendChild(transactionElement);
+        });
+      }
+
+      // Create DOM element for a transaction
+      function createTransactionElement(transaction, index) {
+        const transactionDate = new Date(transaction.date);
+        const formattedDate = transactionDate.toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+
+        const transactionEl = document.createElement("div");
+        transactionEl.className = "history-item";
+        transactionEl.style.animation = `fadeIn 0.3s ease ${
+          index * 0.05
+        }s forwards`;
+        transactionEl.style.opacity = "0";
+
+        // Set icon based on transaction type
+        const iconClass =
+          transaction.type === "deposit"
+            ? "fas fa-arrow-down"
+            : "fas fa-arrow-up";
+
+        // Set status class and text
+        const statusInfo = getStatusInfo(transaction.status);
+
+        transactionEl.innerHTML = `
+                <div class="transaction-info">
+                    <div class="transaction-type">
+                        <i class="${iconClass}"></i>
+                        ${transaction.details}
+                    </div>
+                    <div class="transaction-date">${formattedDate}</div>
+                    <span class="transaction-status ${statusInfo.class}">
+                        ${statusInfo.text}
+                    </span>
+                </div>
+                <div class="transaction-amount ${transaction.type}">
+                    ${
+                      transaction.type === "deposit" ? "+" : "-"
+                    }$${transaction.amount.toFixed(2)}
+                </div>
+            `;
+
+        return transactionEl;
+      }
+
+      // Get status display information
+      function getStatusInfo(status) {
+        switch (status) {
+          case "completed":
+            return { class: "status-completed", text: "Completed" };
+          case "pending":
+            return { class: "status-pending", text: "Pending" };
+          case "failed":
+            return { class: "status-failed", text: "Failed" };
+          default:
+            return { class: "", text: status };
+        }
+      }
+
+      // Show loading state
+      function showLoadingState() {
+        historyList.innerHTML = `
+                <div style="text-align: center; padding: 30px;">
+                    <div class="spinner"></div>
+                    <p style="margin-top: 15px; color: var(--text);">Loading transactions...</p>
+                </div>
+            `;
+      }
+
+      // Show empty state
+      function showEmptyState() {
+        historyList.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <p class="empty-text">No ${
+                      currentFilter === "all" ? "" : currentFilter
+                    } transactions found</p>
+                    <button class="refresh-btn" id="refreshBtn">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+            `;
+      }
+
+      // Show error state
+      function showErrorState(error) {
+        console.error("Transaction error:", error);
+        historyList.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <p class="empty-text">Failed to load transactions</p>
+                    <button class="refresh-btn" id="refreshBtn">
+                        <i class="fas fa-sync-alt"></i> Try Again
+                    </button>
+                </div>
+            `;
+      }
+
+      // Handle user not found scenario
+      function handleUserNotFound() {
+        console.error("User data not found");
+        localStorage.removeItem("earnova_userId");
+        localStorage.removeItem("earnova_userEmail");
+        window.location.href = "login.html";
+      }
+
+      // Handle data fetch errors
+      function handleDataFetchError(error) {
+        console.error("Error fetching data:", error);
+        showErrorState(error);
+      }
+
+      // Initialize the page
+      function initPage() {
+        if (!checkAuth()) return;
+
+        const userId = localStorage.getItem("earnova_userId");
+        fetchUserData(userId);
+        setupTransactionListeners();
+
+        // Set up filter buttons
+        filterButtons.forEach((button) => {
+          button.addEventListener("click", () => {
+            filterButtons.forEach((btn) => btn.classList.remove("active"));
+            button.classList.add("active");
+            currentFilter = button.dataset.filter;
+            processAndRenderTransactions();
+          });
+        });
+
+        // Set up back button
+        backBtn.addEventListener("click", () => {
+          window.history.back();
+        });
+
+        // Set up refresh button (reconnect listeners)
+        refreshBtn.addEventListener("click", setupTransactionListeners);
+      }
+
+      // Start the application when DOM is loaded
+      document.addEventListener("DOMContentLoaded", initPage);
+
+      // Clean up listeners when page is unloaded
+      window.addEventListener("beforeunload", () => {
+        if (depositsListener) depositsListener.off();
+        if (withdrawalsListener) withdrawalsListener.off();
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Daily Check-in - Earnova</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+    <script
+      type="text/javascript"
+      src="//pl26279561.profitableratecpm.com/72/2b/51/722b512cc19954e321139ce36a74cbc1.js"
+    ></script>
+    <style>
+      :root {
+        --primary: #6c5ce7;
+        --primary-dark: #5649c5;
+        --secondary: #a29bfe;
+        --accent: #fd79a8;
+        --dark: #2d3436;
+        --light: #f5f6fa;
+        --success: #00b894;
+        --warning: #fdcb6e;
+        --danger: #d63031;
+        --text: #636e72;
+        --border: #dfe6e9;
+        --card-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+        --card-radius: 12px;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Poppins", sans-serif;
+        color: var(--dark);
+        background-color: var(--light);
+        line-height: 1.6;
+        overflow-x: hidden;
+        padding-bottom: 80px; /* Space for bottom nav */
+      }
+
+      .container {
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+
+      /* Header */
+      .dashboard-header {
+        background-color: white;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        position: fixed;
+        width: 100%;
+        z-index: 1000;
+        padding: 15px 0;
+      }
+
+      .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .user-profile {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .profile-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        background-color: var(--primary);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+      }
+
+      .profile-info h3 {
+        font-size: 1.1rem;
+        margin-bottom: 3px;
+      }
+
+      .profile-info p {
+        font-size: 0.8rem;
+        color: var(--text);
+        opacity: 0.8;
+      }
+
+      .notification-btn {
+        background: none;
+        border: none;
+        font-size: 1.3rem;
+        color: var(--dark);
+        position: relative;
+        cursor: pointer;
+      }
+
+      .notification-badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background-color: var(--danger);
+        color: white;
+        border-radius: 50%;
+        width: 18px;
+        height: 18px;
+        font-size: 0.7rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .logout-btn {
+        background: none;
+        border: none;
+        font-size: 1.3rem;
+        color: var(--dark);
+        cursor: pointer;
+        margin-left: 15px;
+      }
+
+      /* Main Content */
+      .main-content {
+        padding-top: 90px;
+        padding-bottom: 20px;
+      }
+
+      /* Check-in Card */
+      .checkin-card {
+        background-color: white;
+        border-radius: var(--card-radius);
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: var(--card-shadow);
+        position: relative;
+        overflow: hidden;
+        animation: fadeIn 0.8s ease;
+      }
+
+      .checkin-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .checkin-title {
+        font-size: 1.5rem;
+        color: var(--dark);
+        font-weight: 700;
+      }
+
+      .checkin-reward {
+        background-color: var(--success);
+        color: white;
+        padding: 8px 15px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.9rem;
+      }
+
+      .checkin-description {
+        color: var(--text);
+        margin-bottom: 25px;
+        line-height: 1.7;
+      }
+
+      .streak-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 25px;
+        padding: 15px;
+        background-color: rgba(108, 92, 231, 0.1);
+        border-radius: var(--card-radius);
+      }
+
+      .streak-count {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--primary);
+        min-width: 50px;
+        text-align: center;
+      }
+
+      .streak-text {
+        flex: 1;
+      }
+
+      .streak-text h4 {
+        margin-bottom: 5px;
+        color: var(--dark);
+      }
+
+      .streak-text p {
+        color: var(--text);
+        font-size: 0.9rem;
+      }
+
+      .calendar-container {
+        margin-bottom: 30px;
+      }
+
+      .calendar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+
+      .calendar-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--dark);
+      }
+
+      .calendar-month {
+        font-weight: 500;
+        color: var(--primary);
+      }
+
+      .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 10px;
+      }
+
+      .calendar-day-header {
+        text-align: center;
+        font-weight: 600;
+        font-size: 0.8rem;
+        color: var(--text);
+        padding: 5px;
+      }
+
+      .calendar-day {
+        aspect-ratio: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        background-color: white;
+        border: 1px solid var(--border);
+        cursor: pointer;
+        transition: all 0.3s;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .calendar-day.past {
+        background-color: rgba(108, 92, 231, 0.1);
+        border-color: var(--primary);
+      }
+
+      .calendar-day.today {
+        background-color: var(--primary);
+        color: white;
+        transform: scale(1.05);
+        box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3);
+      }
+
+      .calendar-day.future {
+        background-color: var(--light);
+        color: var(--text);
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .calendar-day.checked {
+        background-color: var(--success);
+        color: white;
+      }
+
+      .calendar-day-number {
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-bottom: 3px;
+      }
+
+      .calendar-day-reward {
+        font-size: 0.7rem;
+        opacity: 0.8;
+      }
+
+      .checkin-btn {
+        padding: 14px 25px;
+        background-color: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        font-family: "Poppins", sans-serif;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: block;
+        width: 100%;
+        max-width: 300px;
+        margin: 0 auto;
+      }
+
+      .checkin-btn:hover {
+        background-color: var(--primary-dark);
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(108, 92, 231, 0.2);
+      }
+
+      .checkin-btn:disabled {
+        background-color: var(--border);
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+
+      /* Ad Container */
+      .ad-container {
+        background-color: white;
+        border-radius: var(--card-radius);
+        padding: 20px;
+        margin-bottom: 30px;
+        box-shadow: var(--card-shadow);
+        text-align: center;
+        animation: fadeIn 0.8s ease 0.2s both;
+      }
+
+      .ad-title {
+        font-size: 1rem;
+        margin-bottom: 15px;
+        color: var(--text);
+      }
+
+      .ad-progress {
+        height: 10px;
+        background-color: var(--border);
+        border-radius: 5px;
+        margin-bottom: 20px;
+        overflow: hidden;
+      }
+
+      .ad-progress-bar {
+        height: 100%;
+        background-color: var(--primary);
+        border-radius: 5px;
+        transition: width 0.5s ease;
+      }
+
+      .ad-counter {
+        font-size: 0.9rem;
+        color: var(--text);
+        margin-bottom: 15px;
+      }
+
+      .ad-content {
+        min-height: 100px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+        background-color: var(--light);
+        border-radius: 8px;
+        padding: 15px;
+      }
+
+      .ad-next-btn {
+        padding: 12px 25px;
+        background-color: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        font-family: "Poppins", sans-serif;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      .ad-next-btn:hover {
+        background-color: var(--primary-dark);
+      }
+
+      .ad-next-btn:disabled {
+        background-color: var(--border);
+        cursor: not-allowed;
+      }
+
+      /* Bottom Navigation */
+      .bottom-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background-color: white;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+        padding: 10px 0;
+        z-index: 1000;
+      }
+
+      .nav-items {
+        display: flex;
+        justify-content: space-around;
+      }
+
+      .nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-decoration: none;
+        color: var(--text);
+        font-size: 0.8rem;
+        transition: all 0.3s;
+      }
+
+      .nav-item i {
+        font-size: 1.3rem;
+        margin-bottom: 5px;
+      }
+
+      .nav-item.active {
+        color: var(--primary);
+      }
+
+      .nav-item:hover {
+        color: var(--primary);
+      }
+
+      /* Toast Notification */
+      .toast {
+        position: fixed;
+        bottom: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: var(--success);
+        color: white;
+        padding: 12px 25px;
+        border-radius: 50px;
+        font-weight: 500;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        z-index: 2000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s;
+      }
+
+      .toast.show {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      /* Confetti Animation */
+      .confetti {
+        position: fixed;
+        width: 10px;
+        height: 10px;
+        background-color: var(--primary);
+        opacity: 0;
+        z-index: 1001;
+        animation: confetti-fall 3s ease-out forwards;
+      }
+
+      @keyframes confetti-fall {
+        0% {
+          transform: translateY(-100vh) rotate(0deg);
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(100vh) rotate(360deg);
+          opacity: 0;
+        }
+      }
+
+      /* Animations */
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      @keyframes bounce {
+        0%,
+        20%,
+        50%,
+        80%,
+        100% {
+          transform: translateY(0);
+        }
+        40% {
+          transform: translateY(-20px);
+        }
+        60% {
+          transform: translateY(-10px);
+        }
+      }
+
+      /* Responsive Adjustments */
+      @media (max-width: 768px) {
+        .profile-info h3 {
+          font-size: 1rem;
+        }
+
+        .profile-info p {
+          font-size: 0.75rem;
+        }
+
+        .checkin-card {
+          padding: 20px;
+        }
+
+        .calendar-grid {
+          gap: 5px;
+        }
+
+        .calendar-day-number {
+          font-size: 0.9rem;
+        }
+
+        .calendar-day-reward {
+          font-size: 0.6rem;
+        }
+      }
+
+      @media (max-width: 576px) {
+        .profile-icon {
+          width: 40px;
+          height: 40px;
+          font-size: 1rem;
+        }
+
+        .streak-info {
+          flex-direction: column;
+          text-align: center;
+        }
+
+        .streak-count {
+          font-size: 1.5rem;
+        }
+
+        .calendar-day-header {
+          font-size: 0.7rem;
+        }
+
+        .checkin-btn {
+          padding: 12px 20px;
+          font-size: 0.9rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Dashboard Header -->
+    <header class="dashboard-header">
+      <div class="container header-content">
+        <div class="user-profile">
+          <div class="profile-icon" id="profileIcon">
+            <i class="fas fa-user"></i>
+          </div>
+          <div class="profile-info">
+            <h3 id="userName">Loading...</h3>
+            <p>Daily Check-in</p>
+          </div>
+        </div>
+        <div>
+          <button class="notification-btn">
+            <i class="fas fa-bell"></i>
+            <span class="notification-badge">3</span>
+          </button>
+          <button class="logout-btn" id="logoutBtn">
+            <i class="fas fa-sign-out-alt"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="container">
+        <!-- Check-in Card -->
+        <div class="checkin-card">
+          <div class="checkin-header">
+            <h2 class="checkin-title">Daily Check-in</h2>
+            <div class="checkin-reward">Earn $0.20</div>
+          </div>
+
+          <p class="checkin-description">
+            Check in daily to earn rewards and build your streak! Complete all
+            steps to claim your $0.20 bonus.
+          </p>
+
+          <div class="streak-info">
+            <div class="streak-count" id="streakCount">0</div>
+            <div class="streak-text">
+              <h4>Current Streak</h4>
+              <p>
+                Check in consecutively to increase your streak and earn bigger
+                rewards!
+              </p>
+            </div>
+          </div>
+
+          <div class="calendar-container">
+            <div class="calendar-header">
+              <h3 class="calendar-title">Check-in Calendar</h3>
+              <div class="calendar-month" id="currentMonth">May 2023</div>
+            </div>
+
+            <div class="calendar-grid" id="calendarGrid">
+              <!-- Day headers -->
+              <div class="calendar-day-header">Sun</div>
+              <div class="calendar-day-header">Mon</div>
+              <div class="calendar-day-header">Tue</div>
+              <div class="calendar-day-header">Wed</div>
+              <div class="calendar-day-header">Thu</div>
+              <div class="calendar-day-header">Fri</div>
+              <div class="calendar-day-header">Sat</div>
+
+              <!-- Calendar days will be inserted here by JavaScript -->
+            </div>
+          </div>
+
+          <button class="checkin-btn" id="checkinBtn" disabled>
+            <i class="fas fa-calendar-check"></i> Check In Today
+          </button>
+        </div>
+
+        <!-- Ad Container -->
+        <div class="ad-container" id="adContainer" style="display: none">
+          <h3 class="ad-title">Watch Ads to Complete Check-in</h3>
+          <div class="ad-progress">
+            <div class="ad-progress-bar" id="adProgressBar"></div>
+          </div>
+          <div class="ad-counter" id="adCounter">Ad 1 of 10</div>
+          <div class="ad-content" id="adContent">
+            <!-- Ad content will be loaded here -->
+            <div id="adsterraAd"></div>
+          </div>
+          <button class="ad-next-btn" id="adNextBtn">
+            Next Ad <i class="fas fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+      <div class="container">
+        <div class="nav-items">
+          <a href="dashboard.html" class="nav-item">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+          </a>
+          <a href="earn.html" class="nav-item">
+            <i class="fas fa-coins"></i>
+            <span>Earn</span>
+          </a>
+          <a href="checkin.html" class="nav-item active">
+            <i class="fas fa-calendar-check"></i>
+            <span>Check-in</span>
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+      // Firebase configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyCgOvIkDCcS3DFrt5f6Y7pYmjCoHIfDF9U",
+        authDomain: "moniebase-b4b4d.firebaseapp.com",
+        projectId: "moniebase-b4b4d",
+        storageBucket: "moniebase-b4b4d.appspot.com",
+        messagingSenderId: "1009678808253",
+        appId: "1:1009678808253:android:ff94e94c52bad2db7973d4",
+        databaseURL: "https://moniebase-b4b4d-default-rtdb.firebaseio.com/",
+      };
+
+      // Initialize Firebase
+      firebase.initializeApp(firebaseConfig);
+      const database = firebase.database();
+
+      // DOM Elements
+      const userNameElement = document.getElementById("userName");
+      const profileIconElement = document.getElementById("profileIcon");
+      const logoutBtn = document.getElementById("logoutBtn");
+      const streakCountElement = document.getElementById("streakCount");
+      const currentMonthElement = document.getElementById("currentMonth");
+      const calendarGridElement = document.getElementById("calendarGrid");
+      const checkinBtn = document.getElementById("checkinBtn");
+      const adContainer = document.getElementById("adContainer");
+      const adProgressBar = document.getElementById("adProgressBar");
+      const adCounter = document.getElementById("adCounter");
+      const adContent = document.getElementById("adContent");
+      const adNextBtn = document.getElementById("adNextBtn");
+      const toast = document.getElementById("toast");
+      const adsterraAd = document.getElementById("adsterraAd");
+
+      // State variables
+      let currentUser = null;
+      let checkinData = {};
+      let currentDate = new Date();
+      let currentDay = currentDate.getDate();
+      let currentMonth = currentDate.getMonth();
+      let currentYear = currentDate.getFullYear();
+      let currentAdIndex = 0;
+      const totalAds = 10;
+      let adScriptsLoaded = 0;
+
+      // Check authentication state
+      function checkAuth() {
+        const userId = localStorage.getItem("earnova_userId");
+        const userEmail = localStorage.getItem("earnova_userEmail");
+
+        if (!userId || !userEmail) {
+          window.location.href = "login.html";
+          return false;
+        }
+        return true;
+      }
+
+      // Load user data
+      function loadUserData(userId) {
+        if (!checkAuth()) return;
+
+        database
+          .ref("earnova/" + userId)
+          .once("value")
+          .then((snapshot) => {
+            const userData = snapshot.val();
+            if (!userData) {
+              logout();
+              return;
+            }
+
+            currentUser = userData;
+            currentUser.id = userId;
+
+            // Update user profile
+            userNameElement.textContent = `${userData.firstName} ${userData.surname}`;
+
+            // Update profile icon
+            if (userData.firstName) {
+              profileIconElement.textContent = userData.firstName.charAt(0);
+            }
+
+            if (userData.profileImage) {
+              profileIconElement.textContent = "";
+              profileIconElement.style.backgroundImage = `url(${userData.profileImage})`;
+              profileIconElement.style.backgroundSize = "cover";
+            }
+
+            // Load check-in data
+            loadCheckinData(userId);
+          })
+          .catch((error) => {
+            console.error("Error loading user data:", error);
+          });
+      }
+
+      // Load check-in data
+      function loadCheckinData(userId) {
+        database
+          .ref(`checkins/${userId}/${currentYear}/${currentMonth}`)
+          .once("value")
+          .then((snapshot) => {
+            checkinData = snapshot.val() || {};
+            renderCalendar();
+            updateStreak();
+            updateCheckinButton();
+          })
+          .catch((error) => {
+            console.error("Error loading check-in data:", error);
+          });
+      }
+
+      // Render calendar
+      function renderCalendar() {
+        // Clear existing calendar days (except headers)
+        while (calendarGridElement.children.length > 7) {
+          calendarGridElement.removeChild(calendarGridElement.lastChild);
+        }
+
+        // Set current month display
+        const monthNames = [
+          "January",
+          "February",
+          "March",
+          "April",
+          "May",
+          "June",
+          "July",
+          "August",
+          "September",
+          "October",
+          "November",
+          "December",
+        ];
+        currentMonthElement.textContent = `${monthNames[currentMonth]} ${currentYear}`;
+
+        // Get first day of month and total days
+        const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+        const daysInMonth = new Date(
+          currentYear,
+          currentMonth + 1,
+          0
+        ).getDate();
+
+        // Add empty cells for days before the first day of the month
+        for (let i = 0; i < firstDay; i++) {
+          const emptyDay = document.createElement("div");
+          emptyDay.className = "calendar-day";
+          calendarGridElement.appendChild(emptyDay);
+        }
+
+        // Add days of the month
+        for (let day = 1; day <= daysInMonth; day++) {
+          const dayElement = document.createElement("div");
+          dayElement.className = "calendar-day";
+
+          // Check if this day is in the past, present, or future
+          if (day < currentDay) {
+            dayElement.classList.add("past");
+          } else if (day === currentDay) {
+            dayElement.classList.add("today");
+          } else {
+            dayElement.classList.add("future");
+          }
+
+          // Check if this day has been checked in
+          if (checkinData[day]) {
+            dayElement.classList.add("checked");
+          }
+
+          // Add day number
+          const dayNumber = document.createElement("div");
+          dayNumber.className = "calendar-day-number";
+          dayNumber.textContent = day;
+          dayElement.appendChild(dayNumber);
+
+          // Add reward indicator
+          const dayReward = document.createElement("div");
+          dayReward.className = "calendar-day-reward";
+          dayReward.textContent = "$0.20";
+          dayElement.appendChild(dayReward);
+
+          calendarGridElement.appendChild(dayElement);
+        }
+      }
+
+      // Calculate and update streak
+      function updateStreak() {
+        let streak = 0;
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+
+        // Check if today is already checked in
+        if (checkinData[currentDay]) {
+          streak++;
+        } else {
+          streakCountElement.textContent = "0";
+          return;
+        }
+
+        // Check consecutive days before today
+        let checkDate = new Date(today);
+        let consecutive = true;
+
+        while (consecutive) {
+          checkDate.setDate(checkDate.getDate() - 1);
+
+          // Stop if we've gone past the current month
+          if (
+            checkDate.getMonth() !== currentMonth ||
+            checkDate.getFullYear() !== currentYear
+          ) {
+            break;
+          }
+
+          const checkDay = checkDate.getDate();
+          if (checkinData[checkDay]) {
+            streak++;
+          } else {
+            consecutive = false;
+          }
+        }
+
+        streakCountElement.textContent = streak;
+      }
+
+      // Update check-in button state
+      function updateCheckinButton() {
+        if (checkinData[currentDay]) {
+          checkinBtn.disabled = true;
+          checkinBtn.innerHTML =
+            '<i class="fas fa-check-circle"></i> Already Checked In';
+        } else {
+          checkinBtn.disabled = false;
+          checkinBtn.innerHTML =
+            '<i class="fas fa-calendar-check"></i> Check In Today';
+        }
+      }
+
+      // Show toast notification
+      function showToast(message, isSuccess = true) {
+        toast.textContent = message;
+        toast.style.backgroundColor = isSuccess
+          ? "var(--success)"
+          : "var(--danger)";
+        toast.classList.add("show");
+        setTimeout(() => toast.classList.remove("show"), 3000);
+      }
+
+      // Create confetti effect
+      function createConfetti() {
+        const colors = [
+          "#6c5ce7",
+          "#a29bfe",
+          "#fd79a8",
+          "#00b894",
+          "#fdcb6e",
+          "#d63031",
+        ];
+
+        for (let i = 0; i < 100; i++) {
+          const confetti = document.createElement("div");
+          confetti.className = "confetti";
+          confetti.style.left = `${Math.random() * 100}vw`;
+          confetti.style.backgroundColor =
+            colors[Math.floor(Math.random() * colors.length)];
+          confetti.style.width = `${Math.random() * 10 + 5}px`;
+          confetti.style.height = `${Math.random() * 10 + 5}px`;
+          confetti.style.animationDelay = `${Math.random() * 2}s`;
+          document.body.appendChild(confetti);
+
+          // Remove confetti after animation
+          setTimeout(() => {
+            confetti.remove();
+          }, 3000);
+        }
+      }
+
+      // Start check-in process
+      function startCheckin() {
+        checkinBtn.disabled = true;
+        checkinBtn.innerHTML = '<span class="spinner"></span> Loading...';
+
+        // Show ad container
+        adContainer.style.display = "block";
+        currentAdIndex = 0;
+        loadAd();
+      }
+
+      // Load ad
+      function loadAd() {
+        currentAdIndex++;
+
+        // Update progress
+        const progress = (currentAdIndex / totalAds) * 100;
+        adProgressBar.style.width = `${progress}%`;
+        adCounter.textContent = `Ad ${currentAdIndex} of ${totalAds}`;
+
+        // Clear previous ad
+        adsterraAd.innerHTML = "";
+
+        // Load Adsterra social bar ad
+        if (currentAdIndex <= totalAds) {
+          const script = document.createElement("script");
+          script.type = "text/javascript";
+          script.src =
+            "//pl26278839.profitableratecpm.com/9a/47/e8/9a47e846cf068278f5aaf478c2d1b9ac.js";
+          script.onload = () => {
+            adScriptsLoaded++;
+            if (adScriptsLoaded >= totalAds) {
+              adNextBtn.disabled = false;
+            }
+          };
+          adsterraAd.appendChild(script);
+        }
+
+        // Enable next button after short delay (to ensure ad loads)
+        setTimeout(() => {
+          adNextBtn.disabled = false;
+        }, 2000);
+      }
+
+      // Complete check-in process
+      function completeCheckin() {
+        // Update Firebase
+        const updates = {};
+        updates[
+          `checkins/${currentUser.id}/${currentYear}/${currentMonth}/${currentDay}`
+        ] = true;
+        updates[`earnova/${currentUser.id}/balance`] =
+          firebase.database.ServerValue.increment(0.2);
+        updates[`earnova/${currentUser.id}/lastCheckInDate`] =
+          new Date().toISOString();
+
+        // Calculate streak
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        let newStreak = 1;
+
+        // Check if yesterday was checked in
+        if (
+          yesterday.getDate() === currentDay - 1 &&
+          yesterday.getMonth() === currentMonth &&
+          yesterday.getFullYear() === currentYear &&
+          checkinData[currentDay - 1]
+        ) {
+          // Increment streak from yesterday
+          newStreak = (currentUser.checkInStreak || 0) + 1;
+        }
+
+        updates[`earnova/${currentUser.id}/checkInStreak`] = newStreak;
+
+        database
+          .ref()
+          .update(updates)
+          .then(() => {
+            // Show success message
+            showToast(
+              "Check-in success! Your account has been credited with $0.20"
+            );
+            createConfetti();
+
+            // Update UI
+            checkinData[currentDay] = true;
+            renderCalendar();
+            updateStreak();
+            updateCheckinButton();
+
+            // Hide ad container
+            adContainer.style.display = "none";
+            checkinBtn.disabled = true;
+            checkinBtn.innerHTML =
+              '<i class="fas fa-check-circle"></i> Already Checked In';
+          })
+          .catch((error) => {
+            console.error("Error updating check-in data:", error);
+            showToast("Error completing check-in. Please try again.", false);
+            checkinBtn.disabled = false;
+            checkinBtn.innerHTML =
+              '<i class="fas fa-calendar-check"></i> Check In Today';
+          });
+      }
+
+      // Logout
+      function logout() {
+        localStorage.removeItem("earnova_userId");
+        localStorage.removeItem("earnova_userEmail");
+        window.location.href = "login.html";
+      }
+
+      // Initialize page
+      function init() {
+        if (!checkAuth()) return;
+
+        const userId = localStorage.getItem("earnova_userId");
+        if (!userId) {
+          logout();
+          return;
+        }
+
+        loadUserData(userId);
+
+        // Event listeners
+        checkinBtn.addEventListener("click", startCheckin);
+        logoutBtn.addEventListener("click", logout);
+
+        adNextBtn.addEventListener("click", () => {
+          adNextBtn.disabled = true;
+          adNextBtn.innerHTML = '<span class="spinner"></span> Loading...';
+
+          if (currentAdIndex < totalAds) {
+            loadAd();
+          } else {
+            completeCheckin();
+          }
+
+          adNextBtn.innerHTML = 'Next Ad <i class="fas fa-arrow-right"></i>';
+        });
+      }
+
+      // Initialize when DOM is loaded
+      document.addEventListener("DOMContentLoaded", init);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Leaderboard - Earnova</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+    <style>
+      :root {
+        --primary: #6c5ce7;
+        --primary-dark: #5649c5;
+        --secondary: #a29bfe;
+        --accent: #fd79a8;
+        --dark: #2d3436;
+        --light: #f5f6fa;
+        --success: #00b894;
+        --warning: #fdcb6e;
+        --danger: #d63031;
+        --text: #636e72;
+        --border: #dfe6e9;
+        --card-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+        --card-radius: 12px;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Poppins", sans-serif;
+        color: var(--dark);
+        background-color: var(--light);
+        line-height: 1.6;
+        overflow-x: hidden;
+        padding-bottom: 80px; /* Space for bottom nav */
+      }
+
+      .container {
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+
+      /* Header */
+      .dashboard-header {
+        background-color: white;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        position: fixed;
+        width: 100%;
+        z-index: 1000;
+        padding: 15px 0;
+      }
+
+      .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .user-profile {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .profile-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        background-color: var(--primary);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+      }
+
+      .profile-info h3 {
+        font-size: 1.1rem;
+        margin-bottom: 3px;
+      }
+
+      .profile-info p {
+        font-size: 0.8rem;
+        color: var(--text);
+        opacity: 0.8;
+      }
+
+      .notification-btn {
+        background: none;
+        border: none;
+        font-size: 1.3rem;
+        color: var(--dark);
+        position: relative;
+        cursor: pointer;
+      }
+
+      .notification-badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background-color: var(--danger);
+        color: white;
+        border-radius: 50%;
+        width: 18px;
+        height: 18px;
+        font-size: 0.7rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .logout-btn {
+        background: none;
+        border: none;
+        font-size: 1.3rem;
+        color: var(--dark);
+        cursor: pointer;
+        margin-left: 15px;
+      }
+
+      /* Main Content */
+      .main-content {
+        padding-top: 90px;
+        padding-bottom: 20px;
+      }
+
+      /* Leaderboard Header */
+      .leaderboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+        gap: 15px;
+      }
+
+      .leaderboard-title {
+        font-size: 1.8rem;
+        color: var(--dark);
+        font-weight: 700;
+      }
+
+      .leaderboard-tabs {
+        display: flex;
+        gap: 10px;
+        background-color: rgba(108, 92, 231, 0.1);
+        padding: 5px;
+        border-radius: 50px;
+      }
+
+      .tab-btn {
+        padding: 8px 20px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        border: none;
+        background: none;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      .tab-btn.active {
+        background-color: var(--primary);
+        color: white;
+      }
+
+      .search-filter {
+        display: flex;
+        gap: 10px;
+        width: 100%;
+        max-width: 400px;
+      }
+
+      .search-input {
+        flex: 1;
+        padding: 10px 15px;
+        border: 1px solid var(--border);
+        border-radius: 50px;
+        font-family: "Poppins", sans-serif;
+        font-size: 0.9rem;
+        transition: all 0.3s;
+      }
+
+      .search-input:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
+      }
+
+      .filter-btn {
+        padding: 10px 15px;
+        background-color: white;
+        border: 1px solid var(--border);
+        border-radius: 50px;
+        font-family: "Poppins", sans-serif;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .filter-btn:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+      }
+
+      /* Leaderboard Table */
+      .leaderboard-container {
+        background-color: white;
+        border-radius: var(--card-radius);
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+      }
+
+      .leaderboard-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .leaderboard-table thead th {
+        padding: 15px 20px;
+        text-align: left;
+        font-weight: 600;
+        color: var(--text);
+        background-color: #f8f9fa;
+        border-bottom: 2px solid var(--border);
+      }
+
+      .leaderboard-table tbody tr {
+        border-bottom: 1px solid var(--border);
+        transition: all 0.3s;
+      }
+
+      .leaderboard-table tbody tr:last-child {
+        border-bottom: none;
+      }
+
+      .leaderboard-table tbody tr:hover {
+        background-color: rgba(108, 92, 231, 0.05);
+      }
+
+      .leaderboard-table td {
+        padding: 15px 20px;
+        vertical-align: middle;
+      }
+
+      /* User Cell */
+      .user-cell {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: var(--primary);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .user-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .user-info {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .user-name {
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .verified-badge {
+        width: 16px;
+        height: 16px;
+      }
+
+      .user-status {
+        font-size: 0.75rem;
+        color: var(--danger);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 3px;
+      }
+
+      /* Rank Cell */
+      .rank-cell {
+        font-weight: 700;
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .top-rank {
+        color: var(--success);
+      }
+
+      .rank-1 .rank-cell {
+        color: #ffd700;
+      }
+
+      .rank-2 .rank-cell {
+        color: #c0c0c0;
+      }
+
+      .rank-3 .rank-cell {
+        color: #cd7f32;
+      }
+
+      /* Balance Cell */
+      .balance-cell {
+        font-weight: 600;
+        color: var(--success);
+      }
+
+      /* Referrals Cell */
+      .referrals-cell {
+        font-weight: 500;
+      }
+
+      /* Badge Cell */
+      .badge-cell {
+        display: flex;
+        gap: 5px;
+      }
+
+      .badge {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        color: white;
+      }
+
+      .badge-primary {
+        background-color: var(--primary);
+      }
+
+      .badge-success {
+        background-color: var(--success);
+      }
+
+      .badge-warning {
+        background-color: var(--warning);
+      }
+
+      /* Pagination */
+      .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 30px;
+      }
+
+      .page-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: white;
+        border: 1px solid var(--border);
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      .page-btn.active {
+        background-color: var(--primary);
+        color: white;
+        border-color: var(--primary);
+      }
+
+      .page-btn:hover:not(.active) {
+        border-color: var(--primary);
+        color: var(--primary);
+      }
+
+      /* Empty State */
+      .empty-state {
+        padding: 60px 20px;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .empty-icon {
+        width: 80px;
+        height: 80px;
+        background-color: rgba(108, 92, 231, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary);
+        font-size: 2rem;
+        margin-bottom: 20px;
+      }
+
+      .empty-title {
+        font-size: 1.5rem;
+        margin-bottom: 10px;
+        color: var(--dark);
+      }
+
+      .empty-text {
+        color: var(--text);
+        margin-bottom: 20px;
+        max-width: 500px;
+      }
+
+      /* Bottom Navigation */
+      .bottom-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background-color: white;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+        padding: 10px 0;
+        z-index: 1000;
+      }
+
+      .nav-items {
+        display: flex;
+        justify-content: space-around;
+      }
+
+      .nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-decoration: none;
+        color: var(--text);
+        font-size: 0.8rem;
+        transition: all 0.3s;
+      }
+
+      .nav-item i {
+        font-size: 1.3rem;
+        margin-bottom: 5px;
+      }
+
+      .nav-item.active {
+        color: var(--primary);
+      }
+
+      .nav-item:hover {
+        color: var(--primary);
+      }
+
+      /* Loading Spinner */
+      .spinner-container {
+        display: flex;
+        justify-content: center;
+        padding: 40px;
+      }
+
+      .spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid rgba(108, 92, 231, 0.1);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Animations */
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      /* Responsive Adjustments */
+      @media (max-width: 992px) {
+        .leaderboard-header {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .search-filter {
+          max-width: 100%;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .profile-info h3 {
+          font-size: 1rem;
+        }
+
+        .profile-info p {
+          font-size: 0.75rem;
+        }
+
+        .leaderboard-table thead {
+          display: none;
+        }
+
+        .leaderboard-table tbody tr {
+          display: block;
+          padding: 15px 0;
+          position: relative;
+        }
+
+        .leaderboard-table td {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 8px 15px;
+          border-bottom: 1px solid var(--border);
+        }
+
+        .leaderboard-table td::before {
+          content: attr(data-label);
+          font-weight: 600;
+          color: var(--text);
+          margin-right: 15px;
+        }
+
+        .rank-cell {
+          justify-content: space-between;
+        }
+
+        .user-cell {
+          justify-content: space-between;
+        }
+
+        .user-info {
+          align-items: flex-end;
+        }
+      }
+
+      @media (max-width: 576px) {
+        .profile-icon {
+          width: 40px;
+          height: 40px;
+          font-size: 1rem;
+        }
+
+        .leaderboard-title {
+          font-size: 1.5rem;
+        }
+
+        .tab-btn {
+          padding: 6px 12px;
+          font-size: 0.8rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Dashboard Header -->
+    <header class="dashboard-header">
+      <div class="container header-content">
+        <div class="user-profile">
+          <div class="profile-icon" id="profileIcon">
+            <i class="fas fa-user"></i>
+          </div>
+          <div class="profile-info">
+            <h3 id="userName">Loading...</h3>
+            <p>Leaderboard</p>
+          </div>
+        </div>
+        <div>
+          <button class="notification-btn">
+            <i class="fas fa-bell"></i>
+            <span class="notification-badge">3</span>
+          </button>
+          <button class="logout-btn" id="logoutBtn">
+            <i class="fas fa-sign-out-alt"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="container">
+        <!-- Leaderboard Header -->
+        <div class="leaderboard-header">
+          <h1 class="leaderboard-title">Top Earners</h1>
+
+          <div class="leaderboard-tabs">
+            <button class="tab-btn active" id="allTab">All</button>
+            <button class="tab-btn" id="verifiedTab">Verified</button>
+            <button class="tab-btn" id="unverifiedTab">Unverified</button>
+          </div>
+
+          <div class="search-filter">
+            <input
+              type="text"
+              class="search-input"
+              placeholder="Search users..."
+              id="searchInput"
+            />
+            <button class="filter-btn">
+              <i class="fas fa-filter"></i>
+              <span>Filter</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Leaderboard Table -->
+        <div class="leaderboard-container">
+          <table class="leaderboard-table">
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>User</th>
+                <th>Balance</th>
+                <th>Referrals</th>
+                <th>Badges</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboardBody">
+              <!-- Loading state -->
+              <tr>
+                <td colspan="5">
+                  <div class="spinner-container">
+                    <div class="spinner"></div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination" id="pagination">
+          <!-- Pagination will be added dynamically -->
+        </div>
+      </div>
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+      <div class="container">
+        <div class="nav-items">
+          <a href="dashboard.html" class="nav-item">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+          </a>
+          <a href="leaderboard.html" class="nav-item active">
+            <i class="fas fa-trophy"></i>
+            <span>Leaderboard</span>
+          </a>
+          <a href="settings.html" class="nav-item">
+            <i class="fas fa-cog"></i>
+            <span>Settings</span>
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <script>
+      // Firebase configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyCgOvIkDCcS3DFrt5f6Y7pYmjCoHIfDF9U",
+        authDomain: "moniebase-b4b4d.firebaseapp.com",
+        projectId: "moniebase-b4b4d",
+        storageBucket: "moniebase-b4b4d.appspot.com",
+        messagingSenderId: "1009678808253",
+        appId: "1:1009678808253:android:ff94e94c52bad2db7973d4",
+        databaseURL: "https://moniebase-b4b4d-default-rtdb.firebaseio.com/",
+      };
+
+      // Initialize Firebase
+      firebase.initializeApp(firebaseConfig);
+      const database = firebase.database();
+
+      // DOM Elements
+      const userNameElement = document.getElementById("userName");
+      const profileIconElement = document.getElementById("profileIcon");
+      const logoutBtn = document.getElementById("logoutBtn");
+      const leaderboardBody = document.getElementById("leaderboardBody");
+      const allTab = document.getElementById("allTab");
+      const verifiedTab = document.getElementById("verifiedTab");
+      const unverifiedTab = document.getElementById("unverifiedTab");
+      const searchInput = document.getElementById("searchInput");
+      const pagination = document.getElementById("pagination");
+
+      // Check if user is logged in
+      function checkAuth() {
+        const userId = localStorage.getItem("earnova_userId");
+        const userEmail = localStorage.getItem("earnova_userEmail");
+
+        if (!userId || !userEmail) {
+          window.location.href = "login.html";
+          return false;
+        }
+        return true;
+      }
+
+      // Function to fetch user data
+      function fetchUserData(userId) {
+        if (!checkAuth()) return;
+
+        database
+          .ref("earnova/" + userId)
+          .once("value")
+          .then((snapshot) => {
+            const userData = snapshot.val();
+            if (userData) {
+              // Display user data
+              userNameElement.textContent = `${userData.firstName} ${userData.surname}`;
+
+              // Set profile icon with first letter of first name
+              if (userData.firstName) {
+                profileIconElement.innerHTML = userData.firstName.charAt(0);
+              }
+
+              // If user has a profile image, use it
+              if (userData.profileImage) {
+                profileIconElement.innerHTML = "";
+                profileIconElement.style.backgroundImage = `url(${userData.profileImage})`;
+                profileIconElement.style.backgroundSize = "cover";
+                profileIconElement.style.backgroundPosition = "center";
+              }
+            } else {
+              console.error("User data not found");
+              // Clear storage and redirect to login if user not found
+              localStorage.removeItem("earnova_userId");
+              localStorage.removeItem("earnova_userEmail");
+              window.location.href = "login.html";
+            }
+          })
+          .catch((error) => {
+            console.error("Error fetching user data:", error);
+          });
+      }
+
+      // Function to fetch all users for leaderboard
+      function fetchLeaderboardData(filter = "all", searchQuery = "") {
+        leaderboardBody.innerHTML = `
+          <tr>
+            <td colspan="5">
+              <div class="spinner-container">
+                <div class="spinner"></div>
+              </div>
+            </td>
+          </tr>
+        `;
+
+        database
+          .ref("earnova")
+          .once("value")
+          .then((snapshot) => {
+            const usersData = snapshot.val();
+            if (usersData) {
+              // Convert users object to array
+              let usersArray = Object.keys(usersData).map((key) => {
+                return {
+                  id: key,
+                  ...usersData[key],
+                };
+              });
+
+              // Filter users based on selected tab
+              if (filter === "verified") {
+                usersArray = usersArray.filter(
+                  (user) => user.accountStatus === "verified"
+                );
+              } else if (filter === "unverified") {
+                usersArray = usersArray.filter(
+                  (user) => user.accountStatus !== "verified"
+                );
+              }
+
+              // Filter users based on search query
+              if (searchQuery) {
+                const query = searchQuery.toLowerCase();
+                usersArray = usersArray.filter(
+                  (user) =>
+                    user.firstName.toLowerCase().includes(query) ||
+                    user.surname.toLowerCase().includes(query) ||
+                    user.username.toLowerCase().includes(query)
+                );
+              }
+
+              // Sort users: verified first, then by balance (descending)
+              usersArray.sort((a, b) => {
+                // Verified users first
+                if (
+                  a.accountStatus === "verified" &&
+                  b.accountStatus !== "verified"
+                )
+                  return -1;
+                if (
+                  a.accountStatus !== "verified" &&
+                  b.accountStatus === "verified"
+                )
+                  return 1;
+
+                // Then by balance (descending)
+                return b.balance - a.balance;
+              });
+
+              // Display users in leaderboard
+              displayLeaderboard(usersArray);
+            } else {
+              // No users found
+              leaderboardBody.innerHTML = `
+                <tr>
+                  <td colspan="5">
+                    <div class="empty-state">
+                      <div class="empty-icon">
+                        <i class="fas fa-users"></i>
+                      </div>
+                      <h3 class="empty-title">No Users Found</h3>
+                      <p class="empty-text">There are currently no users to display in the leaderboard.</p>
+                    </div>
+                  </td>
+                </tr>
+              `;
+            }
+          })
+          .catch((error) => {
+            console.error("Error fetching leaderboard data:", error);
+            leaderboardBody.innerHTML = `
+              <tr>
+                <td colspan="5">
+                  <div class="empty-state">
+                    <div class="empty-icon" style="color: var(--danger);">
+                      <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                    <h3 class="empty-title">Error Loading Leaderboard</h3>
+                    <p class="empty-text">There was an error loading the leaderboard data. Please try again later.</p>
+                  </div>
+                </td>
+              </tr>
+            `;
+          });
+      }
+
+      // Function to display users in the leaderboard
+      function displayLeaderboard(users) {
+        if (users.length === 0) {
+          leaderboardBody.innerHTML = `
+            <tr>
+              <td colspan="5">
+                <div class="empty-state">
+                  <div class="empty-icon">
+                    <i class="fas fa-users"></i>
+                  </div>
+                  <h3 class="empty-title">No Users Found</h3>
+                  <p class="empty-text">There are no users matching your criteria.</p>
+                </div>
+              </td>
+            </tr>
+          `;
+          pagination.innerHTML = "";
+          return;
+        }
+
+        let leaderboardHTML = "";
+
+        users.forEach((user, index) => {
+          const rank = index + 1;
+          const isVerified = user.accountStatus === "verified";
+          const initials =
+            user.firstName?.charAt(0) + user.surname?.charAt(0) || "US";
+
+          // Add special class for top 3 ranks
+          let rankClass = "";
+          if (rank === 1) rankClass = "rank-1";
+          else if (rank === 2) rankClass = "rank-2";
+          else if (rank === 3) rankClass = "rank-3";
+
+          leaderboardHTML += `
+            <tr class="${rankClass}">
+              <td data-label="Rank" class="rank-cell ${
+                rank <= 3 ? "top-rank" : ""
+              }">
+                ${rank}
+              </td>
+              <td data-label="User" class="user-cell">
+                <div class="user-avatar">
+                  ${
+                    user.profileImage
+                      ? `<img src="${user.profileImage}" alt="${user.firstName}">`
+                      : initials
+                  }
+                  ${
+                    !isVerified
+                      ? `<span class="user-status"><i class="fas fa-skull"></i> broke</span>`
+                      : ""
+                  }
+                </div>
+                <div class="user-info">
+                  <span class="user-name">
+                    ${user.firstName} ${user.surname}
+                    ${
+                      isVerified
+                        ? `<img src="https://cdn-icons-png.flaticon.com/128/12559/12559876.png" alt="Verified" class="verified-badge">`
+                        : ""
+                    }
+                  </span>
+                  <span class="user-username">@${user.username}</span>
+                </div>
+              </td>
+              <td data-label="Balance" class="balance-cell">
+                $${user.balance?.toFixed(2) || "0.00"}
+              </td>
+              <td data-label="Referrals" class="referrals-cell">
+                ${user.referralList?.length || 0}
+              </td>
+              <td data-label="Badges" class="badge-cell">
+                ${
+                  isVerified
+                    ? `<div class="badge badge-success" title="Verified User"><i class="fas fa-check"></i></div>`
+                    : `<div class="badge badge-warning" title="Unverified User"><i class="fas fa-exclamation"></i></div>`
+                }
+                ${
+                  rank <= 3
+                    ? `<div class="badge badge-primary" title="Top ${rank} Earner"><i class="fas fa-trophy"></i></div>`
+                    : ""
+                }
+              </td>
+            </tr>
+          `;
+        });
+
+        leaderboardBody.innerHTML = leaderboardHTML;
+
+        // Add pagination if needed
+        if (users.length > 10) {
+          const pageCount = Math.ceil(users.length / 10);
+          let paginationHTML = "";
+
+          for (let i = 1; i <= pageCount; i++) {
+            paginationHTML += `
+              <button class="page-btn ${i === 1 ? "active" : ""}">${i}</button>
+            `;
+          }
+
+          pagination.innerHTML = paginationHTML;
+        } else {
+          pagination.innerHTML = "";
+        }
+      }
+
+      // Tab switching
+      allTab.addEventListener("click", () => {
+        allTab.classList.add("active");
+        verifiedTab.classList.remove("active");
+        unverifiedTab.classList.remove("active");
+        fetchLeaderboardData("all", searchInput.value.trim());
+      });
+
+      verifiedTab.addEventListener("click", () => {
+        allTab.classList.remove("active");
+        verifiedTab.classList.add("active");
+        unverifiedTab.classList.remove("active");
+        fetchLeaderboardData("verified", searchInput.value.trim());
+      });
+
+      unverifiedTab.addEventListener("click", () => {
+        allTab.classList.remove("active");
+        verifiedTab.classList.remove("active");
+        unverifiedTab.classList.add("active");
+        fetchLeaderboardData("unverified", searchInput.value.trim());
+      });
+
+      // Search functionality
+      searchInput.addEventListener("input", () => {
+        const activeTab = document.querySelector(".tab-btn.active");
+        const filter = activeTab.id.replace("Tab", "");
+        fetchLeaderboardData(filter, searchInput.value.trim());
+      });
+
+      // Logout function
+      function logout() {
+        localStorage.removeItem("earnova_userId");
+        localStorage.removeItem("earnova_userEmail");
+        window.location.href = "login.html";
+      }
+
+      // Get user ID from localStorage
+      const userId = localStorage.getItem("earnova_userId");
+
+      // Fetch user data when page loads
+      window.addEventListener("DOMContentLoaded", () => {
+        if (!checkAuth()) return;
+        fetchUserData(userId);
+        fetchLeaderboardData();
+      });
+
+      // Logout button event
+      logoutBtn.addEventListener("click", logout);
+
+      // Bottom nav active state
+      //   const navItems = document.querySelectorAll(".nav-item");
+      //   navItems.forEach((item) => {
+      //     item.addEventListener("click", function (e) {
+      //       e.preventDefault();
+      //       navItems.forEach((navItem) => navItem.classList.remove("active"));
+      //       this.classList.add("active");
+      //     });
+      //   });
+    </script>
+  </body>
+</html>

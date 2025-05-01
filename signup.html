@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign Up - Earnova</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+    <style>
+      :root {
+        --primary: #6c5ce7;
+        --primary-dark: #5649c5;
+        --secondary: #a29bfe;
+        --accent: #fd79a8;
+        --dark: #2d3436;
+        --light: #f5f6fa;
+        --success: #00b894;
+        --warning: #fdcb6e;
+        --danger: #d63031;
+        --text: #636e72;
+        --border: #dfe6e9;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Poppins", sans-serif;
+        color: var(--dark);
+        background-color: var(--light);
+        line-height: 1.6;
+        overflow-x: hidden;
+      }
+
+      .container {
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+
+      /* Header */
+      header {
+        background-color: white;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        position: fixed;
+        width: 100%;
+        z-index: 1000;
+      }
+
+      .header-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+      }
+
+      .logo img {
+        height: 60px;
+        width: auto;
+      }
+
+      nav ul {
+        display: flex;
+        list-style: none;
+      }
+
+      nav ul li {
+        margin-left: 20px;
+      }
+
+      nav ul li a {
+        text-decoration: none;
+        color: var(--dark);
+        font-weight: 500;
+        transition: color 0.3s;
+        font-size: 0.9rem;
+      }
+
+      nav ul li a:hover {
+        color: var(--primary);
+      }
+
+      .auth-buttons {
+        display: flex;
+        gap: 10px;
+      }
+
+      .auth-btn {
+        padding: 8px 20px;
+        border-radius: 50px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s;
+        font-size: 0.9rem;
+      }
+
+      .auth-btn-login {
+        background-color: transparent;
+        color: var(--primary);
+        border: 2px solid var(--primary);
+      }
+
+      .auth-btn-login:hover {
+        background-color: var(--primary);
+        color: white;
+      }
+
+      .auth-btn-signup {
+        background-color: var(--primary);
+        color: white;
+        border: 2px solid var(--primary);
+      }
+
+      .auth-btn-signup:hover {
+        background-color: var(--primary-dark);
+        border-color: var(--primary-dark);
+      }
+
+      .mobile-menu-btn {
+        display: none;
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: var(--dark);
+      }
+
+      /* Main Content */
+      .main-content {
+        padding-top: 100px;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        background: linear-gradient(
+          135deg,
+          rgba(108, 92, 231, 0.1),
+          rgba(162, 155, 254, 0.1)
+        );
+      }
+
+      .signup-container {
+        display: flex;
+        width: 100%;
+        max-width: 1100px;
+        margin: 0 auto;
+        background-color: white;
+        border-radius: 15px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+
+      .signup-left {
+        flex: 1;
+        padding: 60px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .signup-left h1 {
+        font-size: 2.5rem;
+        margin-bottom: 20px;
+        animation: fadeInDown 1s ease;
+      }
+
+      .signup-left p {
+        margin-bottom: 30px;
+        font-size: 1.1rem;
+        opacity: 0.9;
+        animation: fadeInUp 1s ease;
+      }
+
+      .benefits-list {
+        list-style: none;
+        margin-bottom: 40px;
+      }
+
+      .benefits-list li {
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        animation: fadeIn 0.5s ease;
+      }
+
+      .benefits-list li i {
+        margin-right: 10px;
+        color: var(--accent);
+        font-size: 1.2rem;
+      }
+
+      .join-group-btn {
+        display: inline-block;
+        padding: 12px 30px;
+        background-color: white;
+        color: var(--primary);
+        border-radius: 50px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s;
+        text-align: center;
+        animation: fadeIn 1.5s ease;
+      }
+
+      .join-group-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      }
+
+      .signup-right {
+        flex: 1;
+        padding: 60px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .signup-right h2 {
+        font-size: 2rem;
+        margin-bottom: 20px;
+        color: var(--dark);
+      }
+
+      .signup-right p {
+        color: var(--text);
+        margin-bottom: 30px;
+      }
+
+      .signup-form {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .form-group label {
+        font-weight: 500;
+        color: var(--dark);
+        font-size: 0.9rem;
+      }
+
+      .form-group input,
+      .form-group select {
+        padding: 12px 15px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-family: "Poppins", sans-serif;
+        font-size: 0.95rem;
+        transition: all 0.3s;
+      }
+
+      .form-group input:focus,
+      .form-group select:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
+      }
+
+      .password-wrapper {
+        position: relative;
+      }
+
+      .password-toggle {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: var(--text);
+        cursor: pointer;
+      }
+
+      .submit-btn {
+        padding: 14px;
+        background-color: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-family: "Poppins", sans-serif;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        margin-top: 10px;
+      }
+
+      .submit-btn:hover {
+        background-color: var(--primary-dark);
+      }
+
+      .login-link {
+        text-align: center;
+        margin-top: 20px;
+        color: var(--text);
+        font-size: 0.9rem;
+      }
+
+      .login-link a {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 500;
+      }
+
+      .login-link a:hover {
+        text-decoration: underline;
+      }
+
+      .error-message {
+        color: var(--danger);
+        font-size: 0.85rem;
+        margin-top: 5px;
+        display: none;
+      }
+
+      /* Country Select Styling */
+      .country-select-wrapper {
+        position: relative;
+      }
+
+      .country-flag-preview {
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+      }
+
+      .country-select {
+        padding-left: 40px !important;
+      }
+
+      /* Success Modal */
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.7);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 2000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s;
+      }
+
+      .modal-overlay.active {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .modal-content {
+        background-color: white;
+        border-radius: 10px;
+        padding: 40px;
+        max-width: 500px;
+        width: 90%;
+        text-align: center;
+        transform: translateY(20px);
+        transition: all 0.3s;
+        position: relative;
+      }
+
+      .modal-overlay.active .modal-content {
+        transform: translateY(0);
+      }
+
+      .modal-icon {
+        font-size: 4rem;
+        color: var(--success);
+        margin-bottom: 20px;
+      }
+
+      .modal-content h3 {
+        font-size: 1.8rem;
+        margin-bottom: 15px;
+        color: var(--dark);
+      }
+
+      .modal-content p {
+        color: var(--text);
+        margin-bottom: 25px;
+      }
+
+      .modal-btn {
+        padding: 12px 30px;
+        background-color: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        font-family: "Poppins", sans-serif;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      .modal-btn:hover {
+        background-color: var(--primary-dark);
+      }
+
+      /* Referral Bonus Message */
+      .referral-bonus {
+        background-color: rgba(0, 184, 148, 0.1);
+        color: var(--success);
+        padding: 10px 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        font-size: 0.9rem;
+        display: none;
+      }
+
+      .referral-bonus i {
+        margin-right: 8px;
+      }
+
+      /* Animations */
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      @keyframes fadeInDown {
+        from {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Responsive Styles */
+      @media (max-width: 992px) {
+        .signup-container {
+          flex-direction: column;
+          max-width: 600px;
+        }
+
+        .signup-left,
+        .signup-right {
+          padding: 40px;
+        }
+
+        .signup-left {
+          order: 2;
+        }
+
+        .signup-right {
+          order: 1;
+        }
+      }
+
+      @media (max-width: 768px) {
+        nav ul {
+          display: none;
+        }
+
+        .mobile-menu-btn {
+          display: block;
+        }
+
+        .auth-buttons {
+          display: none;
+        }
+
+        .signup-left h1 {
+          font-size: 2rem;
+        }
+
+        .signup-right h2 {
+          font-size: 1.8rem;
+        }
+      }
+
+      @media (max-width: 576px) {
+        .signup-left,
+        .signup-right {
+          padding: 30px 20px;
+        }
+
+        .signup-left h1 {
+          font-size: 1.8rem;
+        }
+
+        .signup-right h2 {
+          font-size: 1.5rem;
+        }
+
+        .benefits-list li {
+          font-size: 0.95rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Header -->
+    <header>
+      <div class="container header-container">
+        <div class="logo">
+          <img src="https://earnova.com.ng/New.logo.png" alt="Earnova Logo" />
+        </div>
+        <nav>
+          <ul>
+            <li><a href="index.html#features">Features</a></li>
+            <li><a href="index.html#how-it-works">How It Works</a></li>
+            <li><a href="index.html#testimonials">Testimonials</a></li>
+            <li><a href="index.html#countries">Countries</a></li>
+            <li><a href="index.html#download">Download</a></li>
+          </ul>
+        </nav>
+        <div class="auth-buttons">
+          <a href="login.html" class="auth-btn auth-btn-login">Login</a>
+          <a href="signup.html" class="auth-btn auth-btn-signup">Sign Up</a>
+        </div>
+        <button class="mobile-menu-btn">
+          <i class="fas fa-bars"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="container">
+        <div class="signup-container">
+          <div class="signup-left">
+            <h1>Join Earnova Today</h1>
+            <p>
+              Start earning dollars online with multiple income streams. Sign up
+              now and get a $0.5 bonus!
+            </p>
+            <ul class="benefits-list">
+              <li>
+                <i class="fas fa-check-circle"></i> Complete simple tasks and
+                get paid
+              </li>
+              <li>
+                <i class="fas fa-check-circle"></i> Earn from referrals (up to
+                20% commission)
+              </li>
+              <li>
+                <i class="fas fa-check-circle"></i> Play games and earn rewards
+              </li>
+              <li>
+                <i class="fas fa-check-circle"></i> Daily check-in bonuses
+              </li>
+              <li>
+                <i class="fas fa-check-circle"></i> Blogging opportunities
+              </li>
+              <li>
+                <i class="fas fa-check-circle"></i> Fast withdrawals to crypto
+                or bank
+              </li>
+            </ul>
+            <a href="#" class="join-group-btn">Join Our Community Group</a>
+          </div>
+          <div class="signup-right">
+            <h2>Create Your Account</h2>
+            <p>Fill in your details to get started with Earnova.</p>
+
+            <div class="referral-bonus" id="referralBonusMessage">
+              <i class="fas fa-gift"></i>
+              <span id="bonusMessageText"></span>
+            </div>
+
+            <form id="signupForm" class="signup-form">
+              <div class="form-group">
+                <label for="firstName">First Name</label>
+                <input type="text" id="firstName" name="firstName" required />
+                <div class="error-message" id="firstNameError">
+                  Please enter your first name
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="surname">Surname</label>
+                <input type="text" id="surname" name="surname" required />
+                <div class="error-message" id="surnameError">
+                  Please enter your surname
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required />
+                <div class="error-message" id="usernameError">
+                  Please choose a username
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" required />
+                <div class="error-message" id="emailError">
+                  Please enter a valid email address
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input type="tel" id="phone" name="phone" required />
+                <div class="error-message" id="phoneError">
+                  Please enter a valid phone number
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="country">Country</label>
+                <div class="country-select-wrapper">
+                  <span class="country-flag-preview" id="countryFlag">🇺🇸</span>
+                  <select
+                    id="country"
+                    name="country"
+                    class="country-select"
+                    required
+                  >
+                    <option value="US" data-flag="🇺🇸">United States</option>
+                    <option value="GB" data-flag="🇬🇧">United Kingdom</option>
+                    <option value="GH" data-flag="🇬🇭">Ghana</option>
+                    <option value="NG" data-flag="🇳🇬">Nigeria</option>
+                    <option value="ZA" data-flag="🇿🇦">South Africa</option>
+                    <option value="CN" data-flag="🇨🇳">China</option>
+                    <option value="IN" data-flag="🇮🇳">India</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="referralCode">Referral Code (Optional)</label>
+                <input type="text" id="referralCode" name="referralCode" />
+              </div>
+              <div class="form-group">
+                <label for="password">Password</label>
+                <div class="password-wrapper">
+                  <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    class="password-toggle"
+                    id="togglePassword"
+                  >
+                    <i class="far fa-eye"></i>
+                  </button>
+                </div>
+                <div class="error-message" id="passwordError">
+                  Password must be at least 6 characters
+                </div>
+              </div>
+              <button type="submit" class="submit-btn">Create Account</button>
+            </form>
+            <div class="login-link">
+              Already have an account? <a href="login.html">Log in here</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Success Modal -->
+    <div class="modal-overlay" id="successModal">
+      <div class="modal-content">
+        <div class="modal-icon">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <h3>Account Created Successfully!</h3>
+        <p id="successMessage">
+          Welcome to Earnova! Your account has been created. You can now start
+          earning dollars online.
+        </p>
+        <button class="modal-btn" id="modalCloseBtn">
+          Continue to Dashboard
+        </button>
+      </div>
+    </div>
+
+    <script>
+      // Firebase configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyCgOvIkDCcS3DFrt5f6Y7pYmjCoHIfDF9U",
+        authDomain: "moniebase-b4b4d.firebaseapp.com",
+        projectId: "moniebase-b4b4d",
+        storageBucket: "moniebase-b4b4d.appspot.com",
+        messagingSenderId: "1009678808253",
+        appId: "1:1009678808253:android:ff94e94c52bad2db7973d4",
+        databaseURL: "https://moniebase-b4b4d-default-rtdb.firebaseio.com/",
+      };
+
+      // Initialize Firebase
+      firebase.initializeApp(firebaseConfig);
+      const database = firebase.database();
+
+      // DOM Elements
+      const signupForm = document.getElementById("signupForm");
+      const togglePassword = document.getElementById("togglePassword");
+      const passwordInput = document.getElementById("password");
+      const countrySelect = document.getElementById("country");
+      const countryFlag = document.getElementById("countryFlag");
+      const successModal = document.getElementById("successModal");
+      const modalCloseBtn = document.getElementById("modalCloseBtn");
+      const mobileMenuBtn = document.querySelector(".mobile-menu-btn");
+      const nav = document.querySelector("nav ul");
+      const referralCodeInput = document.getElementById("referralCode");
+      const referralBonusMessage = document.getElementById(
+        "referralBonusMessage"
+      );
+      const bonusMessageText = document.getElementById("bonusMessageText");
+      const successMessage = document.getElementById("successMessage");
+
+      // Check for referral code in URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const refCode = urlParams.get("ref");
+
+      if (refCode) {
+        referralCodeInput.value = refCode;
+        checkReferralCode(refCode);
+      }
+
+      // Country flag update
+      countrySelect.addEventListener("change", function () {
+        const selectedOption = this.options[this.selectedIndex];
+        const flag = selectedOption.getAttribute("data-flag");
+        countryFlag.textContent = flag;
+      });
+
+      // Toggle password visibility
+      togglePassword.addEventListener("click", function () {
+        const type =
+          passwordInput.getAttribute("type") === "password"
+            ? "text"
+            : "password";
+        passwordInput.setAttribute("type", type);
+        this.innerHTML =
+          type === "password"
+            ? '<i class="far fa-eye"></i>'
+            : '<i class="far fa-eye-slash"></i>';
+      });
+
+      // Check referral code when input changes
+      referralCodeInput.addEventListener("input", function () {
+        const code = this.value.trim();
+        if (code.length > 0) {
+          checkReferralCode(code);
+        } else {
+          referralBonusMessage.style.display = "none";
+        }
+      });
+
+      // Function to check if referral code is valid
+      function checkReferralCode(code) {
+        database
+          .ref("earnova")
+          .orderByChild("username")
+          .equalTo(code)
+          .once("value")
+          .then((snapshot) => {
+            if (snapshot.exists()) {
+              // Referral code is valid
+              bonusMessageText.textContent =
+                "Valid referral code! The referrer will earn $1.01 when you sign up.";
+              referralBonusMessage.style.display = "block";
+              referralBonusMessage.style.backgroundColor =
+                "rgba(0, 184, 148, 0.1)";
+              referralBonusMessage.style.color = "var(--success)";
+            } else {
+              // Referral code is invalid
+              bonusMessageText.textContent =
+                "This referral code doesn't exist. Please check and try again.";
+              referralBonusMessage.style.display = "block";
+              referralBonusMessage.style.backgroundColor =
+                "rgba(253, 203, 110, 0.1)";
+              referralBonusMessage.style.color = "var(--warning)";
+            }
+          })
+          .catch((error) => {
+            console.error("Error checking referral code:", error);
+          });
+      }
+
+      // Form validation
+      function validateForm() {
+        let isValid = true;
+
+        // First Name validation
+        const firstName = document.getElementById("firstName").value.trim();
+        if (firstName === "") {
+          document.getElementById("firstNameError").style.display = "block";
+          isValid = false;
+        } else {
+          document.getElementById("firstNameError").style.display = "none";
+        }
+
+        // Surname validation
+        const surname = document.getElementById("surname").value.trim();
+        if (surname === "") {
+          document.getElementById("surnameError").style.display = "block";
+          isValid = false;
+        } else {
+          document.getElementById("surnameError").style.display = "none";
+        }
+
+        // Username validation
+        const username = document.getElementById("username").value.trim();
+        if (username === "") {
+          document.getElementById("usernameError").style.display = "block";
+          isValid = false;
+        } else {
+          document.getElementById("usernameError").style.display = "none";
+        }
+
+        // Email validation
+        const email = document.getElementById("email").value.trim();
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+          document.getElementById("emailError").style.display = "block";
+          isValid = false;
+        } else {
+          document.getElementById("emailError").style.display = "none";
+        }
+
+        // Phone validation
+        const phone = document.getElementById("phone").value.trim();
+        const phoneRegex = /^[0-9]{10,15}$/;
+        if (!phoneRegex.test(phone)) {
+          document.getElementById("phoneError").style.display = "block";
+          isValid = false;
+        } else {
+          document.getElementById("phoneError").style.display = "none";
+        }
+
+        // Password validation
+        const password = document.getElementById("password").value;
+        if (password.length < 6) {
+          document.getElementById("passwordError").style.display = "block";
+          isValid = false;
+        } else {
+          document.getElementById("passwordError").style.display = "none";
+        }
+
+        return isValid;
+      }
+
+      // Form submission
+      signupForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        if (validateForm()) {
+          // Get form values
+          const firstName = document.getElementById("firstName").value.trim();
+          const surname = document.getElementById("surname").value.trim();
+          const username = document.getElementById("username").value.trim();
+          const email = document.getElementById("email").value.trim();
+          const phone = document.getElementById("phone").value.trim();
+          const country = document.getElementById("country").value;
+          const countryName =
+            document.getElementById("country").options[
+              document.getElementById("country").selectedIndex
+            ].text;
+          const referralCode = document
+            .getElementById("referralCode")
+            .value.trim();
+          const password = document.getElementById("password").value;
+
+          // Generate user ID
+          const userId = generateUserId();
+
+          // Get current timestamp
+          const timestamp = new Date().toISOString();
+
+          // Create user data object - new user always gets $0.50
+          const userData = {
+            firstName: firstName,
+            surname: surname,
+            username: username,
+            email: email,
+            phone: phone,
+            country: {
+              code: country,
+              name: countryName,
+            },
+            referralCodeUsed: referralCode || null,
+            password: password,
+            balance: 0.5, // Base signup bonus of $0.50
+            referralList: {},
+            totalReferralEarnings: 0,
+            dateJoined: timestamp,
+            lastCheckInDate: null,
+            checkInStreak: 0,
+            accountStatus: "unverified",
+            profileImage:
+              "https://cdn-icons-png.flaticon.com/128/15486/15486785.png",
+          };
+
+          // Check if referral code is valid
+          if (referralCode) {
+            database
+              .ref("earnova")
+              .orderByChild("username")
+              .equalTo(referralCode)
+              .once("value")
+              .then((snapshot) => {
+                if (snapshot.exists()) {
+                  // Get the referrer's user ID
+                  let referrerId = null;
+                  snapshot.forEach((childSnapshot) => {
+                    referrerId = childSnapshot.key;
+                  });
+
+                  if (referrerId) {
+                    // Update referrer's data - add $1.01 to their balance
+                    const referrerUpdates = {};
+                    referrerUpdates[
+                      `earnova/${referrerId}/referralList/${userId}`
+                    ] = true;
+                    referrerUpdates[
+                      `earnova/${referrerId}/totalReferralEarnings`
+                    ] = firebase.database.ServerValue.increment(1.01);
+                    referrerUpdates[`earnova/${referrerId}/balance`] =
+                      firebase.database.ServerValue.increment(1.01);
+
+                    // Update referrer's data first
+                    return database
+                      .ref()
+                      .update(referrerUpdates)
+                      .then(() => {
+                        console.log("Referrer data updated successfully");
+                        // Then save new user data
+                        return database.ref("earnova/" + userId).set(userData);
+                      });
+                  }
+                }
+                // If no referral code or referrer not found, just save new user
+                return database.ref("earnova/" + userId).set(userData);
+              })
+              .then(() => {
+                // Show success modal
+                successModal.classList.add("active");
+                successMessage.textContent =
+                  "Welcome to Earnova! Your account has been created with a $0.50 bonus.";
+
+                // Reset form
+                signupForm.reset();
+              })
+              .catch((error) => {
+                console.error("Error saving user data: ", error);
+                alert(
+                  "There was an error creating your account. Please try again."
+                );
+              });
+          } else {
+            // No referral code - just save the user with base bonus
+            database
+              .ref("earnova/" + userId)
+              .set(userData)
+              .then(() => {
+                // Show success modal
+                successModal.classList.add("active");
+                successMessage.textContent =
+                  "Welcome to Earnova! Your account has been created with a $0.50 bonus.";
+
+                // Reset form
+                signupForm.reset();
+              })
+              .catch((error) => {
+                console.error("Error saving user data: ", error);
+                alert(
+                  "There was an error creating your account. Please try again."
+                );
+              });
+          }
+        }
+      });
+
+      // Generate random user ID
+      function generateUserId() {
+        return "user_" + Math.random().toString(36).substr(2, 9);
+      }
+
+      // Close modal
+      modalCloseBtn.addEventListener("click", function () {
+        successModal.classList.remove("active");
+        window.location.href = "dashboard.html"; // Redirect to dashboard
+      });
+
+      // Mobile menu toggle
+      mobileMenuBtn.addEventListener("click", () => {
+        nav.style.display = nav.style.display === "flex" ? "none" : "flex";
+      });
+
+      // Close mobile menu when clicking on a link
+      const navLinks = document.querySelectorAll("nav ul li a");
+      navLinks.forEach((link) => {
+        link.addEventListener("click", () => {
+          if (window.innerWidth <= 768) {
+            nav.style.display = "none";
+          }
+        });
+      });
+
+      // Smooth scrolling for anchor links
+      document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+        anchor.addEventListener("click", function (e) {
+          e.preventDefault();
+
+          const targetId = this.getAttribute("href");
+          if (targetId === "#") return;
+
+          const targetElement = document.querySelector(targetId);
+          if (targetElement) {
+            window.scrollTo({
+              top: targetElement.offsetTop - 80,
+              behavior: "smooth",
+            });
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
