@@ -796,7 +796,7 @@
             if (snapshot.exists()) {
               // Referral code is valid
               bonusMessageText.textContent =
-                "Valid referral code! The referrer will earn $.60 when you sign up.";
+                "Valid referral code! The referrer will earn $1.01 when you sign up.";
               referralBonusMessage.style.display = "block";
               referralBonusMessage.style.backgroundColor =
                 "rgba(0, 184, 148, 0.1)";
@@ -953,9 +953,9 @@
                     ] = true;
                     referrerUpdates[
                       `earnova/${referrerId}/totalReferralEarnings`
-                    ] = firebase.database.ServerValue.increment(0.10);
+                    ] = firebase.database.ServerValue.increment(1.01);
                     referrerUpdates[`earnova/${referrerId}/balance`] =
-                      firebase.database.ServerValue.increment(0.10);
+                      firebase.database.ServerValue.increment(1.01);
 
                     // Update referrer's data first
                     return database
