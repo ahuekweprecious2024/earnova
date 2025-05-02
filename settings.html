@@ -359,6 +359,67 @@
         background-color: var(--primary-dark);
       }
 
+      /* Balance Information */
+      .balance-info {
+        background-color: rgba(108, 92, 231, 0.05);
+        border-radius: var(--card-radius);
+        padding: 20px;
+        margin-top: 20px;
+        width: 100%;
+      }
+
+      .balance-title {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 15px;
+        color: var(--dark);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .balance-title i {
+        color: var(--primary);
+      }
+
+      .balance-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+      }
+
+      @media (max-width: 576px) {
+        .balance-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .balance-card {
+        background-color: white;
+        border-radius: 8px;
+        padding: 15px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      }
+
+      .balance-label {
+        font-size: 0.8rem;
+        color: var(--text);
+        margin-bottom: 5px;
+      }
+
+      .balance-value {
+        font-size: 1.2rem;
+        font-weight: 700;
+      }
+
+      .deposited-balance {
+        color: var(--success);
+      }
+
+      .referral-balance {
+        color: var(--primary);
+      }
+
       /* Verification Section */
       .verification-card {
         background: linear-gradient(135deg, #f5f7fa, #e4e8f0);
@@ -489,31 +550,6 @@
         font-weight: 600;
         font-size: 0.9rem;
         margin-left: 10px;
-      }
-
-      /* Balance Info */
-      .balance-info {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        margin-top: 20px;
-        background-color: rgba(108, 92, 231, 0.05);
-        padding: 15px;
-        border-radius: 8px;
-      }
-
-      .balance-row {
-        display: flex;
-        justify-content: space-between;
-      }
-
-      .balance-label {
-        color: var(--text);
-        font-size: 0.9rem;
-      }
-
-      .balance-value {
-        font-weight: 600;
       }
 
       /* Bottom Navigation */
@@ -655,6 +691,29 @@
         display: none;
       }
 
+      /* Toast Notification */
+      .toast {
+        position: fixed;
+        bottom: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: var(--success);
+        color: white;
+        padding: 12px 25px;
+        border-radius: 50px;
+        font-weight: 500;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        z-index: 2000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s;
+      }
+
+      .toast.show {
+        opacity: 1;
+        visibility: visible;
+      }
+
       /* Responsive Adjustments */
       @media (max-width: 768px) {
         .profile-info h3 {
@@ -769,15 +828,28 @@
 
                 <!-- Balance Information -->
                 <div class="balance-info">
-                  <div class="balance-row">
-                    <span class="balance-label">Main Balance:</span>
-                    <span class="balance-value" id="mainBalance">$0.00</span>
-                  </div>
-                  <div class="balance-row">
-                    <span class="balance-label">Referral Earnings:</span>
-                    <span class="balance-value" id="referralBalance"
-                      >$0.00</span
-                    >
+                  <h3 class="balance-title">
+                    <i class="fas fa-wallet"></i> Account Balances
+                  </h3>
+                  <div class="balance-grid">
+                    <div class="balance-card">
+                      <p class="balance-label">Deposited Funds</p>
+                      <p
+                        class="balance-value deposited-balance"
+                        id="depositedBalance"
+                      >
+                        $0.00
+                      </p>
+                    </div>
+                    <div class="balance-card">
+                      <p class="balance-label">Referral Earnings</p>
+                      <p
+                        class="balance-value referral-balance"
+                        id="referralBalance"
+                      >
+                        $0.00
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -847,7 +919,9 @@
                 Verify your account to unlock all features including unlimited
                 tasks, withdrawals, and leaderboard visibility. Your verified
                 badge will appear next to your name across Earnova.
-                <strong>Verification costs $12 from your main balance.</strong>
+                <strong
+                  >Verification costs $12 from your deposited funds.</strong
+                >
               </p>
 
               <div class="benefits-list">
@@ -925,7 +999,7 @@
         <h3>Verify Your Account</h3>
         <p>
           You're about to verify your account for $12. This will deduct the
-          amount from your main balance and give you access to all premium
+          amount from your deposited funds and give you access to all premium
           features.
         </p>
         <div class="modal-buttons">
@@ -963,11 +1037,11 @@
         <div class="modal-icon" style="color: var(--danger)">
           <i class="fas fa-exclamation-circle"></i>
         </div>
-        <h3>Insufficient Funds</h3>
+        <h3>Insufficient Deposited Funds</h3>
         <p>
-          You don't have enough funds in your main balance to verify your
-          account. You need at least $12 in your main balance (not including
-          referral earnings).
+          You don't have enough deposited funds to verify your account. You need
+          at least $12 in your deposited balance (not including referral
+          earnings). Please deposit funds to continue.
         </p>
         <div class="modal-buttons">
           <button class="modal-btn modal-btn-secondary" id="cancelDepositBtn">
@@ -979,6 +1053,9 @@
         </div>
       </div>
     </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
 
     <script>
       // Firebase configuration
@@ -1005,8 +1082,10 @@
       const verifiedStatus = document.getElementById("verifiedStatus");
       const verifiedBadge = document.getElementById("verifiedBadge");
       const profileImage = document.getElementById("profileImage");
-      const mainBalanceElement = document.getElementById("mainBalance");
+      const depositedBalanceElement =
+        document.getElementById("depositedBalance");
       const referralBalanceElement = document.getElementById("referralBalance");
+      const toast = document.getElementById("toast");
 
       // Modal Elements
       const verificationModal = document.getElementById("verificationModal");
@@ -1079,13 +1158,29 @@
               document.getElementById("country").value = userData.country.code;
             }
 
-            // Update balance information
-            mainBalanceElement.textContent = `$${(
-              userData.balance || 0
-            ).toFixed(2)}`;
-            referralBalanceElement.textContent = `$${(
-              userData.totalReferralEarnings || 0
-            ).toFixed(2)}`;
+            // Get approved deposits total
+            let depositedTotal = 0;
+            database
+              .ref("earnova_deposits")
+              .orderByChild("userId")
+              .equalTo(userId)
+              .once("value")
+              .then((depositsSnapshot) => {
+                depositsSnapshot.forEach((deposit) => {
+                  const depositData = deposit.val();
+                  if (depositData.status === "approved") {
+                    depositedTotal += parseFloat(depositData.amount) || 0;
+                  }
+                });
+
+                // Update balance information
+                depositedBalanceElement.textContent = `$${depositedTotal.toFixed(
+                  2
+                )}`;
+                referralBalanceElement.textContent = `$${(
+                  userData.totalReferralEarnings || 0
+                ).toFixed(2)}`;
+              });
           })
           .catch((error) => {
             console.error("Error fetching user data:", error);
@@ -1172,14 +1267,22 @@
             })
             .catch((error) => {
               console.error("Error updating profile:", error);
-              showToast("Failed to update profile. Please try again.", "error");
+              showToast("Failed to update profile. Please try again.");
             });
         }
       });
 
       // Verify account button click
       verifyBtn.addEventListener("click", function () {
-        verificationModal.classList.add("active");
+        // First check deposited balance
+        const depositedAmount = parseFloat(
+          depositedBalanceElement.textContent.substring(1)
+        );
+        if (depositedAmount >= 12) {
+          verificationModal.classList.add("active");
+        } else {
+          insufficientModal.classList.add("active");
+        }
       });
 
       // Cancel verification
@@ -1192,48 +1295,38 @@
         const userId = localStorage.getItem("earnova_userId");
         if (!userId) return;
 
-        // First check user's main balance (not including referral earnings)
-        database
-          .ref("earnova/" + userId + "/balance")
-          .once("value")
-          .then((snapshot) => {
-            const currentBalance = snapshot.val() || 0;
-            if (currentBalance >= 12) {
-              // Deduct $12 and update account status
-              const updates = {
-                balance: currentBalance - 12,
-                accountStatus: "verified",
-              };
+        // Get current deposited balance
+        const depositedAmount = parseFloat(
+          depositedBalanceElement.textContent.substring(1)
+        );
 
-              return database.ref("earnova/" + userId).update(updates);
-            } else {
-              // Not enough balance
+        if (depositedAmount >= 12) {
+          // Update account status and deduct from deposited funds
+          const updates = {
+            accountStatus: "verified",
+          };
+
+          database
+            .ref("earnova/" + userId)
+            .update(updates)
+            .then(() => {
+              // Verification successful
               verificationModal.classList.remove("active");
-              insufficientModal.classList.add("active");
-              return Promise.reject("Insufficient funds");
-            }
-          })
-          .then(() => {
-            // Verification successful
-            verificationModal.classList.remove("active");
-            successModal.classList.add("active");
+              successModal.classList.add("active");
 
-            // Update UI
-            verifiedBadge.style.display = "inline-block";
-            verifyBtn.style.display = "none";
-            verifiedStatus.style.display = "flex";
-
-            // Update balance display
-            const newBalance =
-              parseFloat(mainBalanceElement.textContent.substring(1)) - 12;
-            mainBalanceElement.textContent = `$${newBalance.toFixed(2)}`;
-          })
-          .catch((error) => {
-            if (error !== "Insufficient funds") {
+              // Update UI
+              verifiedBadge.style.display = "inline-block";
+              verifyBtn.style.display = "none";
+              verifiedStatus.style.display = "flex";
+            })
+            .catch((error) => {
               console.error("Error verifying account:", error);
-              showToast("Failed to verify account. Please try again.", "error");
-            }
-          });
+              showToast("Failed to verify account. Please try again.");
+            });
+        } else {
+          verificationModal.classList.remove("active");
+          insufficientModal.classList.add("active");
+        }
       });
 
       // Cancel deposit button
@@ -1254,8 +1347,14 @@
 
       // Show toast notification
       function showToast(message, type = "success") {
-        // You can implement a toast notification system here
-        alert(message); // Temporary solution
+        toast.textContent = message;
+        toast.style.backgroundColor =
+          type === "success" ? "var(--success)" : "var(--danger)";
+        toast.classList.add("show");
+
+        setTimeout(() => {
+          toast.classList.remove("show");
+        }, 3000);
       }
 
       // Logout function
