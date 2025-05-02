@@ -44,7 +44,7 @@
         background-color: var(--light);
         line-height: 1.6;
         overflow-x: hidden;
-        padding-bottom: 80px; /* Space for bottom nav */
+        padding-bottom: 80px;
       }
 
       .container {
@@ -148,10 +148,10 @@
         padding-bottom: 20px;
       }
 
-      /* Settings Section */
+      /* Settings Layout */
       .settings-container {
         display: grid;
-        grid-template-columns: 280px 1fr;
+        grid-template-columns: minmax(250px, 300px) 1fr;
         gap: 25px;
       }
 
@@ -237,7 +237,7 @@
         gap: 25px;
       }
 
-      @media (max-width: 576px) {
+      @media (max-width: 768px) {
         .profile-section {
           grid-template-columns: 1fr;
         }
@@ -255,19 +255,26 @@
       }
 
       .profile-image {
-        width: 120px;
-        height: 120px;
+        width: 150px;
+        height: 150px;
         border-radius: 50%;
         object-fit: cover;
         border: 3px solid var(--primary);
+      }
+
+      @media (max-width: 576px) {
+        .profile-image {
+          width: 120px;
+          height: 120px;
+        }
       }
 
       .change-image-btn {
         position: absolute;
         bottom: 10px;
         right: 10px;
-        width: 35px;
-        height: 35px;
+        width: 40px;
+        height: 40px;
         background-color: var(--primary);
         color: white;
         border-radius: 50%;
@@ -284,7 +291,7 @@
       }
 
       .upload-btn {
-        padding: 8px 20px;
+        padding: 10px 25px;
         background-color: var(--primary);
         color: white;
         border: none;
@@ -293,6 +300,7 @@
         font-weight: 500;
         cursor: pointer;
         transition: all 0.3s;
+        margin-bottom: 20px;
       }
 
       .upload-btn:hover {
@@ -344,7 +352,6 @@
         font-weight: 600;
         cursor: pointer;
         transition: all 0.3s;
-        align-self: flex-start;
         margin-top: 10px;
       }
 
@@ -357,7 +364,7 @@
         background: linear-gradient(135deg, #f5f7fa, #e4e8f0);
         border-radius: var(--card-radius);
         padding: 25px;
-        margin-top: 30px;
+        margin-top: 40px;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -389,6 +396,7 @@
         color: var(--text);
         margin-bottom: 20px;
         max-width: 500px;
+        line-height: 1.6;
       }
 
       .verification-badge {
@@ -483,6 +491,31 @@
         margin-left: 10px;
       }
 
+      /* Balance Info */
+      .balance-info {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 20px;
+        background-color: rgba(108, 92, 231, 0.05);
+        padding: 15px;
+        border-radius: 8px;
+      }
+
+      .balance-row {
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .balance-label {
+        color: var(--text);
+        font-size: 0.9rem;
+      }
+
+      .balance-value {
+        font-weight: 600;
+      }
+
       /* Bottom Navigation */
       .bottom-nav {
         position: fixed;
@@ -563,7 +596,6 @@
 
       .modal-icon {
         font-size: 3.5rem;
-        color: var(--primary);
         margin-bottom: 20px;
       }
 
@@ -615,37 +647,12 @@
         background-color: rgba(108, 92, 231, 0.1);
       }
 
-      /* Animations */
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-        }
-        to {
-          opacity: 1;
-        }
-      }
-
-      @keyframes fadeInUp {
-        from {
-          opacity: 0;
-          transform: translateY(20px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      @keyframes pulse {
-        0% {
-          transform: scale(1);
-        }
-        50% {
-          transform: scale(1.05);
-        }
-        100% {
-          transform: scale(1);
-        }
+      /* Error Messages */
+      .error-message {
+        color: var(--danger);
+        font-size: 0.8rem;
+        margin-top: 5px;
+        display: none;
       }
 
       /* Responsive Adjustments */
@@ -668,11 +675,6 @@
 
         .settings-content {
           padding: 20px;
-        }
-
-        .profile-image {
-          width: 100px;
-          height: 100px;
         }
       }
     </style>
@@ -764,20 +766,43 @@
                   </button>
                 </div>
                 <button class="upload-btn">Upload Photo</button>
+
+                <!-- Balance Information -->
+                <div class="balance-info">
+                  <div class="balance-row">
+                    <span class="balance-label">Main Balance:</span>
+                    <span class="balance-value" id="mainBalance">$0.00</span>
+                  </div>
+                  <div class="balance-row">
+                    <span class="balance-label">Referral Earnings:</span>
+                    <span class="balance-value" id="referralBalance"
+                      >$0.00</span
+                    >
+                  </div>
+                </div>
               </div>
 
               <form class="profile-info-form" id="profileForm">
                 <div class="form-group">
                   <label for="firstName">First Name</label>
                   <input type="text" id="firstName" name="firstName" required />
+                  <div class="error-message" id="firstNameError">
+                    Please enter your first name
+                  </div>
                 </div>
                 <div class="form-group">
                   <label for="surname">Surname</label>
                   <input type="text" id="surname" name="surname" required />
+                  <div class="error-message" id="surnameError">
+                    Please enter your surname
+                  </div>
                 </div>
                 <div class="form-group">
                   <label for="username">Username</label>
                   <input type="text" id="username" name="username" required />
+                  <div class="error-message" id="usernameError">
+                    Please choose a username
+                  </div>
                 </div>
                 <div class="form-group">
                   <label for="email">Email Address</label>
@@ -792,6 +817,9 @@
                 <div class="form-group">
                   <label for="phone">Phone Number</label>
                   <input type="tel" id="phone" name="phone" required />
+                  <div class="error-message" id="phoneError">
+                    Please enter a valid phone number
+                  </div>
                 </div>
                 <div class="form-group">
                   <label for="country">Country</label>
@@ -819,6 +847,7 @@
                 Verify your account to unlock all features including unlimited
                 tasks, withdrawals, and leaderboard visibility. Your verified
                 badge will appear next to your name across Earnova.
+                <strong>Verification costs $12 from your main balance.</strong>
               </p>
 
               <div class="benefits-list">
@@ -890,15 +919,15 @@
     <!-- Verification Modal -->
     <div class="modal-overlay" id="verificationModal">
       <div class="modal-content">
-        <div class="modal-icon">
+        <div class="modal-icon" style="color: var(--primary)">
           <i class="fas fa-shield-alt"></i>
         </div>
         <h3>Verify Your Account</h3>
         <p>
           You're about to verify your account for $12. This will deduct the
-          amount from your balance and give you access to all premium features.
+          amount from your main balance and give you access to all premium
+          features.
         </p>
-        <p> Dont use your referral earning to verify account , only deposit balance can be used for verification</p>
         <div class="modal-buttons">
           <button class="modal-btn modal-btn-secondary" id="cancelVerifyBtn">
             Cancel
@@ -936,12 +965,18 @@
         </div>
         <h3>Insufficient Funds</h3>
         <p>
-          You don't have enough balance to verify your account. You need at
-          least $12 in your account to get verified.
+          You don't have enough funds in your main balance to verify your
+          account. You need at least $12 in your main balance (not including
+          referral earnings).
         </p>
-        <button class="modal-btn modal-btn-primary" id="insufficientModalBtn">
-          Deposit Now
-        </button>
+        <div class="modal-buttons">
+          <button class="modal-btn modal-btn-secondary" id="cancelDepositBtn">
+            Maybe Later
+          </button>
+          <button class="modal-btn modal-btn-primary" id="depositNowBtn">
+            Deposit Now
+          </button>
+        </div>
       </div>
     </div>
 
@@ -970,6 +1005,8 @@
       const verifiedStatus = document.getElementById("verifiedStatus");
       const verifiedBadge = document.getElementById("verifiedBadge");
       const profileImage = document.getElementById("profileImage");
+      const mainBalanceElement = document.getElementById("mainBalance");
+      const referralBalanceElement = document.getElementById("referralBalance");
 
       // Modal Elements
       const verificationModal = document.getElementById("verificationModal");
@@ -978,9 +1015,8 @@
       const successModal = document.getElementById("successModal");
       const successModalBtn = document.getElementById("successModalBtn");
       const insufficientModal = document.getElementById("insufficientModal");
-      const insufficientModalBtn = document.getElementById(
-        "insufficientModalBtn"
-      );
+      const cancelDepositBtn = document.getElementById("cancelDepositBtn");
+      const depositNowBtn = document.getElementById("depositNowBtn");
 
       // Check if user is logged in
       function checkAuth() {
@@ -1003,50 +1039,53 @@
           .once("value")
           .then((snapshot) => {
             const userData = snapshot.val();
-            if (userData) {
-              // Display user data
-              userNameElement.textContent = `${userData.firstName} ${userData.surname}`;
-
-              // Show verified badge if account is verified
-              if (userData.accountStatus === "verified") {
-                verifiedBadge.style.display = "inline-block";
-                verifyBtn.style.display = "none";
-                verifiedStatus.style.display = "flex";
-              }
-
-              // Set profile icon with first letter of first name
-              if (userData.firstName) {
-                profileIconElement.innerHTML = userData.firstName.charAt(0);
-              }
-
-              // If user has a profile image, use it
-              if (userData.profileImage) {
-                profileIconElement.innerHTML = "";
-                profileIconElement.style.backgroundImage = `url(${userData.profileImage})`;
-                profileImage.src = userData.profileImage;
-              }
-
-              // Fill form fields
-              document.getElementById("firstName").value =
-                userData.firstName || "";
-              document.getElementById("surname").value = userData.surname || "";
-              document.getElementById("username").value =
-                userData.username || "";
-              document.getElementById("email").value = userData.email || "";
-              document.getElementById("phone").value = userData.phone || "";
-
-              // Set country select
-              if (userData.country && userData.country.code) {
-                document.getElementById("country").value =
-                  userData.country.code;
-              }
-            } else {
-              console.error("User data not found");
-              // Clear storage and redirect to login if user not found
-              localStorage.removeItem("earnova_userId");
-              localStorage.removeItem("earnova_userEmail");
-              window.location.href = "login.html";
+            if (!userData) {
+              logout();
+              return;
             }
+
+            // Display user data
+            userNameElement.textContent = `${userData.firstName} ${userData.surname}`;
+
+            // Show verified badge if account is verified
+            if (userData.accountStatus === "verified") {
+              verifiedBadge.style.display = "inline-block";
+              verifyBtn.style.display = "none";
+              verifiedStatus.style.display = "flex";
+            }
+
+            // Set profile icon with first letter of first name
+            if (userData.firstName) {
+              profileIconElement.textContent = userData.firstName.charAt(0);
+            }
+
+            // If user has a profile image, use it
+            if (userData.profileImage) {
+              profileIconElement.textContent = "";
+              profileIconElement.style.backgroundImage = `url(${userData.profileImage})`;
+              profileImage.src = userData.profileImage;
+            }
+
+            // Fill form fields
+            document.getElementById("firstName").value =
+              userData.firstName || "";
+            document.getElementById("surname").value = userData.surname || "";
+            document.getElementById("username").value = userData.username || "";
+            document.getElementById("email").value = userData.email || "";
+            document.getElementById("phone").value = userData.phone || "";
+
+            // Set country select
+            if (userData.country && userData.country.code) {
+              document.getElementById("country").value = userData.country.code;
+            }
+
+            // Update balance information
+            mainBalanceElement.textContent = `$${(
+              userData.balance || 0
+            ).toFixed(2)}`;
+            referralBalanceElement.textContent = `$${(
+              userData.totalReferralEarnings || 0
+            ).toFixed(2)}`;
           })
           .catch((error) => {
             console.error("Error fetching user data:", error);
@@ -1058,38 +1097,84 @@
         return database.ref("earnova/" + userId).update(updatedData);
       }
 
+      // Form validation
+      function validateProfileForm() {
+        let isValid = true;
+
+        // First Name validation
+        const firstName = document.getElementById("firstName").value.trim();
+        if (firstName === "") {
+          document.getElementById("firstNameError").style.display = "block";
+          isValid = false;
+        } else {
+          document.getElementById("firstNameError").style.display = "none";
+        }
+
+        // Surname validation
+        const surname = document.getElementById("surname").value.trim();
+        if (surname === "") {
+          document.getElementById("surnameError").style.display = "block";
+          isValid = false;
+        } else {
+          document.getElementById("surnameError").style.display = "none";
+        }
+
+        // Username validation
+        const username = document.getElementById("username").value.trim();
+        if (username === "") {
+          document.getElementById("usernameError").style.display = "block";
+          isValid = false;
+        } else {
+          document.getElementById("usernameError").style.display = "none";
+        }
+
+        // Phone validation
+        const phone = document.getElementById("phone").value.trim();
+        const phoneRegex = /^[0-9]{10,15}$/;
+        if (!phoneRegex.test(phone)) {
+          document.getElementById("phoneError").style.display = "block";
+          isValid = false;
+        } else {
+          document.getElementById("phoneError").style.display = "none";
+        }
+
+        return isValid;
+      }
+
       // Form submission for profile updates
       profileForm.addEventListener("submit", function (e) {
         e.preventDefault();
 
-        const userId = localStorage.getItem("earnova_userId");
-        if (!userId) return;
+        if (validateProfileForm()) {
+          const userId = localStorage.getItem("earnova_userId");
+          if (!userId) return;
 
-        const updatedData = {
-          firstName: document.getElementById("firstName").value.trim(),
-          surname: document.getElementById("surname").value.trim(),
-          username: document.getElementById("username").value.trim(),
-          phone: document.getElementById("phone").value.trim(),
-          country: {
-            code: document.getElementById("country").value,
-            name: document.getElementById("country").options[
-              document.getElementById("country").selectedIndex
-            ].text,
-          },
-        };
+          const updatedData = {
+            firstName: document.getElementById("firstName").value.trim(),
+            surname: document.getElementById("surname").value.trim(),
+            username: document.getElementById("username").value.trim(),
+            phone: document.getElementById("phone").value.trim(),
+            country: {
+              code: document.getElementById("country").value,
+              name: document.getElementById("country").options[
+                document.getElementById("country").selectedIndex
+              ].text,
+            },
+          };
 
-        updateUserData(userId, updatedData)
-          .then(() => {
-            // Update displayed name
-            userNameElement.textContent = `${updatedData.firstName} ${updatedData.surname}`;
+          updateUserData(userId, updatedData)
+            .then(() => {
+              // Update displayed name
+              userNameElement.textContent = `${updatedData.firstName} ${updatedData.surname}`;
 
-            // Show success message
-            alert("Profile updated successfully!");
-          })
-          .catch((error) => {
-            console.error("Error updating profile:", error);
-            alert("Failed to update profile. Please try again.");
-          });
+              // Show success message
+              showToast("Profile updated successfully!");
+            })
+            .catch((error) => {
+              console.error("Error updating profile:", error);
+              showToast("Failed to update profile. Please try again.", "error");
+            });
+        }
       });
 
       // Verify account button click
@@ -1107,12 +1192,12 @@
         const userId = localStorage.getItem("earnova_userId");
         if (!userId) return;
 
-        // First check user's balance
+        // First check user's main balance (not including referral earnings)
         database
           .ref("earnova/" + userId + "/balance")
           .once("value")
           .then((snapshot) => {
-            const currentBalance = snapshot.val();
+            const currentBalance = snapshot.val() || 0;
             if (currentBalance >= 12) {
               // Deduct $12 and update account status
               const updates = {
@@ -1137,13 +1222,29 @@
             verifiedBadge.style.display = "inline-block";
             verifyBtn.style.display = "none";
             verifiedStatus.style.display = "flex";
+
+            // Update balance display
+            const newBalance =
+              parseFloat(mainBalanceElement.textContent.substring(1)) - 12;
+            mainBalanceElement.textContent = `$${newBalance.toFixed(2)}`;
           })
           .catch((error) => {
             if (error !== "Insufficient funds") {
               console.error("Error verifying account:", error);
-              alert("Failed to verify account. Please try again.");
+              showToast("Failed to verify account. Please try again.", "error");
             }
           });
+      });
+
+      // Cancel deposit button
+      cancelDepositBtn.addEventListener("click", function () {
+        insufficientModal.classList.remove("active");
+      });
+
+      // Deposit now button
+      depositNowBtn.addEventListener("click", function () {
+        insufficientModal.classList.remove("active");
+        window.location.href = "deposit.html";
       });
 
       // Success modal button
@@ -1151,11 +1252,11 @@
         successModal.classList.remove("active");
       });
 
-      // Insufficient funds modal button
-      insufficientModalBtn.addEventListener("click", function () {
-        insufficientModal.classList.remove("active");
-        window.location.href = "deposit.html";
-      });
+      // Show toast notification
+      function showToast(message, type = "success") {
+        // You can implement a toast notification system here
+        alert(message); // Temporary solution
+      }
 
       // Logout function
       function logout() {
