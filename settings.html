@@ -778,7 +778,7 @@
         <div class="settings-container">
           <!-- Settings Sidebar -->
           <div class="settings-sidebar">
-            <ul class="settings-menu">
+            <!-- <ul class="settings-menu">
               <li>
                 <a href="#" class="active">
                   <i class="fas fa-user"></i> Profile
@@ -802,7 +802,7 @@
                 </a>
               </li>
             </ul>
-          </div>
+          </div> -->
 
           <!-- Settings Content -->
           <div class="settings-content">
@@ -920,7 +920,7 @@
                 tasks, withdrawals, and leaderboard visibility. Your verified
                 badge will appear next to your name across Earnova.
                 <strong
-                  >Verification costs $12 from your deposited funds.</strong
+                  >Verification costs $10 from your deposited funds.</strong
                 >
               </p>
 
@@ -953,7 +953,7 @@
 
               <button class="verify-btn" id="verifyBtn">
                 <i class="fas fa-shield-alt"></i> Get Verified for
-                <span class="price-tag">$12</span>
+                <span class="price-tag">$10</span>
               </button>
 
               <div
@@ -998,7 +998,7 @@
         </div>
         <h3>Verify Your Account</h3>
         <p>
-          You're about to verify your account for $12. This will deduct the
+          You're about to verify your account for $10. This will deduct the
           amount from your deposited funds and give you access to all premium
           features.
         </p>
@@ -1040,7 +1040,7 @@
         <h3>Insufficient Deposited Funds</h3>
         <p>
           You don't have enough deposited funds to verify your account. You need
-          at least $12 in your deposited balance (not including referral
+          at least $10 in your deposited balance (not including referral
           earnings). Please deposit funds to continue.
         </p>
         <div class="modal-buttons">
@@ -1278,7 +1278,7 @@
         const depositedAmount = parseFloat(
           depositedBalanceElement.textContent.substring(1)
         );
-        if (depositedAmount >= 12) {
+        if (depositedAmount >= 10) {
           verificationModal.classList.add("active");
         } else {
           insufficientModal.classList.add("active");
@@ -1300,7 +1300,7 @@
           depositedBalanceElement.textContent.substring(1)
         );
 
-        if (depositedAmount >= 12) {
+        if (depositedAmount >= 10) {
           // Update account status and deduct from deposited funds
           const updates = {
             accountStatus: "verified",
