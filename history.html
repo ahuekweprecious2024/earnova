@@ -615,6 +615,7 @@
           id: id,
           type: type,
           amount: data.amount || 0,
+          currency: data.currency || "USD", // Add currency field
           date: data.timestamp || new Date().toISOString(),
           status: getTransactionStatus(data, isDeposit),
           details: getTransactionDetails(data, isDeposit),
@@ -640,9 +641,13 @@
             ? `Bank Deposit (${data.accountNumber || "N/A"})`
             : `Crypto Deposit (${data.cryptoType || "USDT"})`;
         } else {
-          return `Withdrawal to ${data.bankName || "Bank"} (${
-            data.accountNumber || "N/A"
-          })`;
+          if (data.type === "bank") {
+            return `Withdrawal to ${data.bankName || "Bank"} (${
+              data.accountNumber || "N/A"
+            })`;
+          } else {
+            return `Crypto Withdrawal (${data.cryptoType || "USDT"})`;
+          }
         }
       }
 
@@ -727,6 +732,14 @@
         // Set status class and text
         const statusInfo = getStatusInfo(transaction.status);
 
+        // Format amount with correct currency symbol
+        let amountDisplay;
+        if (transaction.currency === "NGN") {
+          amountDisplay = `₦${transaction.amount.toFixed(2)}`;
+        } else {
+          amountDisplay = `$${transaction.amount.toFixed(2)}`;
+        }
+
         transactionEl.innerHTML = `
                 <div class="transaction-info">
                     <div class="transaction-type">
@@ -741,7 +754,7 @@
                 <div class="transaction-amount ${transaction.type}">
                     ${
                       transaction.type === "deposit" ? "+" : "-"
-                    }$${transaction.amount.toFixed(2)}
+                    }${amountDisplay}
                 </div>
             `;
 
