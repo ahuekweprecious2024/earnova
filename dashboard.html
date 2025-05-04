@@ -455,6 +455,207 @@
           text-align: center;
         }
       }
+
+
+
+      /* Twitter Popup Styles */
+  .twitter-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .twitter-popup-overlay.active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .twitter-popup {
+    background: linear-gradient(135deg, #1da1f2, #1991da);
+    border-radius: 16px;
+    width: 90%;
+    max-width: 400px;
+    color: white;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    transform: translateY(20px);
+    transition: transform 0.3s ease;
+  }
+
+  .twitter-popup-overlay.active .twitter-popup {
+    transform: translateY(0);
+  }
+
+  .twitter-popup-header {
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: rgba(0, 0, 0, 0.1);
+    position: relative;
+  }
+
+  .twitter-icon {
+    width: 50px;
+    height: 50px;
+    background-color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #1da1f2;
+    font-size: 24px;
+    margin-right: 15px;
+  }
+
+  .twitter-popup-header h3 {
+    margin: 0;
+    font-size: 1.4rem;
+    flex-grow: 1;
+  }
+
+  .close-popup-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 5px;
+    opacity: 0.7;
+    transition: opacity 0.3s;
+  }
+
+  .close-popup-btn:hover {
+    opacity: 1;
+  }
+
+  .twitter-popup-content {
+    padding: 20px;
+    text-align: center;
+  }
+
+  .twitter-popup-content p {
+    margin-bottom: 20px;
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  .twitter-handle {
+    display: inline-flex;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.2);
+    padding: 10px 15px;
+    border-radius: 30px;
+    margin-bottom: 20px;
+  }
+
+  .twitter-handle i {
+    margin-right: 8px;
+    font-size: 1.2rem;
+  }
+
+  .twitter-follow-btn {
+    display: inline-block;
+    background-color: white;
+    color: #1da1f2;
+    padding: 12px 25px;
+    border-radius: 30px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    margin-bottom: 10px;
+    width: 80%;
+    max-width: 200px;
+  }
+
+  .twitter-follow-btn:hover {
+    background-color: #f5f8fa;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  }
+
+  .twitter-popup-footer {
+    padding: 15px 20px;
+    background-color: rgba(0, 0, 0, 0.1);
+    text-align: center;
+    font-size: 0.9rem;
+  }
+
+  .twitter-popup-footer a {
+    color: white;
+    font-weight: 600;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  /* Confirmation styles */
+  .confirmation-message {
+    display: none;
+    padding: 20px;
+    text-align: center;
+  }
+
+  .confirmation-message i {
+    font-size: 3rem;
+    color: #00c853;
+    margin-bottom: 15px;
+    display: block;
+  }
+
+  .confirmation-message p {
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+  }
+
+  /* Loading spinner */
+  .twitter-spinner {
+    display: none;
+    width: 24px;
+    height: 24px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s ease-in-out infinite;
+    margin: 0 auto;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 480px) {
+    .twitter-popup {
+      width: 95%;
+    }
+
+    .twitter-popup-header {
+      padding: 15px;
+    }
+
+    .twitter-icon {
+      width: 40px;
+      height: 40px;
+      font-size: 20px;
+    }
+
+    .twitter-popup-header h3 {
+      font-size: 1.2rem;
+    }
+  }
     </style>
   </head>
   <body>
@@ -497,8 +698,6 @@
           </div>
         </div>
 
-<script type='text/javascript' src='//pl26278839.profitableratecpm.com/9a/47/e8/9a47e846cf068278f5aaf478c2d1b9ac.js'></script>
-        
         <!-- Services Section -->
         <h2 class="section-title">Services</h2>
         <div class="services-grid">
@@ -707,7 +906,113 @@
         if (userId) {
           fetchUserData(userId);
         }
-      }, 30000);
+      }, 1000);
     </script>
+    <!-- Twitter Follow Popup -->
+<div class="twitter-popup-overlay" id="twitterPopupOverlay">
+  <div class="twitter-popup">
+    <div class="twitter-popup-header">
+      <div class="twitter-icon">
+        <i class="fab fa-twitter"></i>
+      </div>
+      <h3>Earn $1.20 Bonus!</h3>
+      <button class="close-popup-btn" id="closePopupBtn">&times;</button>
+    </div>
+    <div class="twitter-popup-content">
+      <p>Follow the Twitter page and get an instant $1.20 bonus added to your balance!</p>
+      <div class="twitter-handle">
+        <i class="fab fa-twitter"></i>
+        <span>@moniebase</span>
+      </div>
+      <a href="https://x.com/moniebase?t=asjASNH-OA3ylv1Vaz32Aw" target="_blank" class="twitter-follow-btn" id="twitterFollowBtn">
+        Follow Now
+      </a>
+    </div>
+    <div class="twitter-popup-footer">
+      <p>Already followed? <a href="#" id="claimBonusBtn">Claim your bonus</a></p>
+    </div>
+  </div>
+</div>
+<script>
+  // Twitter Follow Popup Functionality
+  document.addEventListener('DOMContentLoaded', function() {
+    const twitterPopupOverlay = document.getElementById('twitterPopupOverlay');
+    const closePopupBtn = document.getElementById('closePopupBtn');
+    const twitterFollowBtn = document.getElementById('twitterFollowBtn');
+    const claimBonusBtn = document.getElementById('claimBonusBtn');
+    const userId = localStorage.getItem('earnova_userId');
+    
+    // Check if user has already completed the Twitter follow action
+    const hasCompletedTwitterFollow = localStorage.getItem('earnova_twitterFollowCompleted');
+    
+    // Show popup only if user hasn't completed the action
+    if (!hasCompletedTwitterFollow && userId) {
+      // Show popup after 3 seconds (you can adjust this delay)
+      setTimeout(() => {
+        twitterPopupOverlay.classList.add('active');
+      }, 3000);
+    }
+    
+    // Close popup button
+    closePopupBtn.addEventListener('click', function() {
+      twitterPopupOverlay.classList.remove('active');
+    });
+    
+    // Claim bonus button
+    claimBonusBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      
+      // Show loading state
+      const originalContent = claimBonusBtn.innerHTML;
+      claimBonusBtn.innerHTML = '<span class="twitter-spinner"></span>';
+      claimBonusBtn.style.pointerEvents = 'none';
+      
+      // Simulate API call (replace with actual API call in production)
+      setTimeout(() => {
+        // Mark as completed in local storage
+        localStorage.setItem('earnova_twitterFollowCompleted', 'true');
+        
+        // Update user balance (this is a simulation - in real app you'd update Firebase)
+        const currentBalance = parseFloat(document.getElementById('userBalance').textContent);
+        const newBalance = currentBalance + 1.20;
+        document.getElementById('userBalance').textContent = newBalance.toFixed(2);
+        
+        // In a real app, you would update the balance in Firebase here
+        database.ref('earnova/' + userId).update({
+          balance: newBalance
+        });
+        
+        // Show confirmation
+        const popupContent = document.querySelector('.twitter-popup-content');
+        popupContent.innerHTML = `
+          <div class="confirmation-message">
+            <i class="fas fa-check-circle"></i>
+            <p>Success! $1.20 has been added to your balance.</p>
+            <button class="twitter-follow-btn" id="closeConfirmationBtn">Done</button>
+          </div>
+        `;
+        
+        // Add event listener to the new button
+        document.getElementById('closeConfirmationBtn').addEventListener('click', function() {
+          twitterPopupOverlay.classList.remove('active');
+        });
+      }, 1500);
+    });
+    
+    // Twitter follow button opens in new tab
+    twitterFollowBtn.addEventListener('click', function(e) {
+      // No need to prevent default as we want it to open the link
+      // But we'll add a visual indicator that they should come back to claim
+      const originalContent = twitterFollowBtn.innerHTML;
+      twitterFollowBtn.innerHTML = 'Followed? Come back to claim!';
+      twitterFollowBtn.style.backgroundColor = '#00c853';
+      
+      setTimeout(() => {
+        twitterFollowBtn.innerHTML = originalContent;
+        twitterFollowBtn.style.backgroundColor = 'white';
+      }, 3000);
+    });
+  });
+</script>
   </body>
 </html>
